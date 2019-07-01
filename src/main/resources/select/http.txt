@@ -1,0 +1,7 @@
+http
+https
+ftp
+www
+cgi-bin
+index.html
+index.php

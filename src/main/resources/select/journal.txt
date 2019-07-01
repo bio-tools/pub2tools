@@ -1,0 +1,25 @@
+# From list of journals of 23nd April 2018, High relevance
+
+Bioinformatics (Oxford, England)
+BMC bioinformatics
+F1000Research
+GigaScience
+Nucleic acids research
+PLoS computational biology
+Nature methods
+
+# From list of journals of 23nd April 2018, Medium relevance
+
+American journal of human genetics
+Genome biology
+BMC systems biology
+Biophysical journal
+Source code for biology and medicine
+Current protocols in bioinformatics
+Database : the journal of biological databases and curation
+
+# Also prevalent in bio.tools
+
+BMC genomics
+Genome research
+Proteins

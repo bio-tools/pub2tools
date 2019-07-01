@@ -22,10 +22,10 @@ package tools.bio.pub2tools;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.beust.jcommander.Parameter;
 
@@ -52,8 +51,6 @@ import org.apache.logging.log4j.core.Filter.Result;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.filter.MarkerFilter;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import org.edamontology.pubfetcher.cli.PubFetcherMethods;
 import org.edamontology.pubfetcher.core.common.BasicArgs;
@@ -81,50 +78,6 @@ public final class Pub2Tools {
 	private static Logger logger;
 
 	static final String MAIN_MARKER = "MAIN";
-
-	// TODO remove
-	//private static final String MESH_QUERY = "(Software[MeSH Terms]) AND (genetics[MeSH Subheading] OR Genetics[MeSH Terms] OR Genomics[MeSH Terms] OR Genetic Phenomena[MeSH Terms] OR Biochemical Phenomena[MeSH Terms] OR Genetic Techniques[MeSH Terms] OR Molecular Probe Techniques[MeSH Terms] OR Nucleic Acids, Nucleotides, and Nucleosides[MeSH Terms] OR Amino Acids, Peptides, and Proteins[MeSH Terms]) AND (\"2013/01/01\"[PDat] : \"2100/01/01\"[PDat])";
-	private static final String MESH_QUERY = "(Software[MeSH Terms]) AND (\"2013/01/01\"[PDat] : \"2017/12/31\"[PDat])";
-
-	// TODO remove
-	private static void meshQuery(FetcherArgs fetcherArgs) throws IOException, ParseException, URISyntaxException {
-		String meshQuery = new URI("https", "eutils.ncbi.nlm.nih.gov", "/entrez/eutils/esearch.fcgi", "db=pubmed&term=" + MESH_QUERY + "&retmax=1000000", null).toASCIIString();
-
-		Set<String> pmids = new LinkedHashSet<>();
-
-		Document doc = new Fetcher(fetcherArgs.getPrivateArgs()).getDoc(meshQuery, false, fetcherArgs);
-		if (doc != null) {
-			for (Element id : doc.getElementsByTag("Id")) {
-				pmids.add(id.text());
-			}
-		}
-
-		for (String pmid : pmids) {
-			System.out.println(pmid + "\t\t");
-		}
-	}
-
-	// TODO remove
-	private static void journalQuery(FetcherArgs fetcherArgs) throws IOException, ParseException, URISyntaxException {
-		List<String> journal = PubFetcher.getResource(Pub2Tools.class, "resources/journal.txt").stream().map(j -> "\"" + j + "\"[Journal]").collect(Collectors.toList());
-
-		String journalQuery = new URI("https", "eutils.ncbi.nlm.nih.gov", "/entrez/eutils/esearch.fcgi", "db=pubmed&term=" + "(" + String.join(" OR ", journal) + ") AND (\"2018/01/01\"[PDat] : \"2018/12/31\"[PDat])" + "&retmax=1000000", null).toASCIIString();
-
-		Set<String> pmids = new LinkedHashSet<>();
-
-		Document doc = new Fetcher(fetcherArgs.getPrivateArgs()).getDoc(journalQuery, false, fetcherArgs);
-		if (doc != null) {
-			for (Element id : doc.getElementsByTag("Id")) {
-				pmids.add(id.text());
-			}
-		}
-
-		for (String pmid : pmids) {
-			System.out.println(pmid + "\t\t");
-		}
-		System.out.println(journalQuery);
-		System.out.println("pmids size: " + pmids.size());
-	}
 
 	private static Step getStep(Path outputPath) throws IOException {
 		Path stepPath = outputPath.resolve(Common.STEP_FILE);
@@ -215,8 +168,20 @@ public final class Pub2Tools {
 		copy(biotools, biotoolsTo, fetcherArgs);
 	}
 
-	private static void selectPub(Path outputPath, String logPrefix) {
-		// TODO
+	private static void selectPub(Path outputPath, String date, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
+		Marker mainMarker = MarkerManager.getMarker(MAIN_MARKER);
+		Path pubPath = outputPath.resolve(Common.PUB_FILE);
+		logger.info(mainMarker, "{}Select publication IDs from Europe PMC for date {}", logPrefix, date);
+		try (BufferedWriter bw = Files.newBufferedWriter(pubPath, StandardCharsets.UTF_8)) {
+			List<PublicationIds> ids = new ArrayList<>();
+			ids.addAll(SelectPub.select(date, fetcherArgs, logPrefix));
+			Collections.shuffle(ids);
+			for (PublicationIds id : ids) {
+				bw.write(id.toString(true));
+				bw.write("\n");
+			}
+			logger.info(mainMarker, "{}Selected {} publication IDs from Europe PMC for date {}", logPrefix, ids.size(), date);
+		}
 	}
 
 	private static void copyPub(Path outputPath, String pub, FetcherArgs fetcherArgs, String logPrefix) throws IOException {
@@ -399,7 +364,6 @@ public final class Pub2Tools {
 		if (args.getBiotools != null) return args.getBiotools;
 		if (args.copyBiotools != null) return args.copyBiotools;
 		if (args.selectPub != null) return args.selectPub;
-		// TODO other args.select
 		if (args.copyPub != null) return args.copyPub;
 		if (args.initDb != null) return args.initDb;
 		if (args.copyDb != null) return args.copyDb;
@@ -447,9 +411,10 @@ public final class Pub2Tools {
 			copyBiotools(outputPath, args.biotools, args.fetcherArgs, "");
 		}
 
-		if (args.selectPub != null) {
+		if (args.selectPub != null && requiredArgs(new String[] { "from", "to" }, "selectPub", args)) {
+			String date = SelectPub.getDate(args.from, args.to);
 			checkStepNone(outputPath);
-			selectPub(outputPath, "");
+			selectPub(outputPath, date, args.fetcherArgs, "");
 		}
 
 		if (args.copyPub != null && requiredArgs(new String[] { "pub" }, "copyPub", args)) {
@@ -521,7 +486,24 @@ public final class Pub2Tools {
 			Marker mainMarker = MarkerManager.getMarker(MAIN_MARKER);
 			logger.info(mainMarker, "Running setup and all steps");
 			logger.info(mainMarker, "0 setup");
+			String date = null;
+			if (args.pub == null) {
+				if (args.from == null || args.to == null) {
+					throw new IllegalArgumentException("Parameters --from and --to are required if --pub is missing!");
+				}
+				date = SelectPub.getDate(args.from, args.to);
+			}
 			checkStepNone(outputPath);
+			if (args.pub != null) {
+				if (!new File(args.pub).exists()) {
+					throw new FileNotFoundException("Publication IDs file \"" + args.pub + "\" does not exist!");
+				}
+			}
+			if (args.db != null) {
+				if (!new File(args.db).exists()) {
+					throw new FileNotFoundException("Database file \"" + args.db + "\" does not exist!");
+				}
+			}
 			copyEdam(outputPath, args.edam, args.fetcherArgs, "0/5 ");
 			copyIdf(outputPath, args.idf, args.idfStemmed, args.fetcherArgs, "0/5 ");
 			if (args.biotools != null) {
@@ -532,7 +514,7 @@ public final class Pub2Tools {
 			if (args.pub != null) {
 				copyPub(outputPath, args.pub, args.fetcherArgs, "0/5 ");
 			} else {
-				selectPub(outputPath, "0/5 ");
+				selectPub(outputPath, date, args.fetcherArgs, "0/5 ");
 			}
 			if (args.db != null) {
 				copyDb(outputPath, args.db, args.fetcherArgs, "0/5 ");
@@ -588,16 +570,6 @@ public final class Pub2Tools {
 				logger.info(mainMarker, "5 step {}", Step.map);
 				map(outputPath, args.mapperThreads, args.preProcessorArgs, args.fetcherArgs, args.mapperArgs, args.verbose, version, "5/5 ");
 			}
-		}
-
-		// TODO remove
-		if (args.meshQuery) {
-			meshQuery(args.fetcherArgs);
-		}
-
-		// TODO remove
-		if (args.journalQuery) {
-			journalQuery(args.fetcherArgs);
 		}
 
 		if (args.beforeAfter && requiredArgs(new String[] { "idf", "pub", "db" }, "beforeAfter", args)) {

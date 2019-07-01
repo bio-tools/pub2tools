@@ -1,0 +1,96 @@
+github
+sourceforge
+code.google.com
+bitbucket
+gitlab
+pypi
+raghava
+
+bioconductor
+r package
+cran
+bioc
+comprehensive r archive network
+
+our package
+python package
+
+gplv3
+lgpl
+public license
+gnu
+gpl license
+mit license
+bsd license
+under gpl
+under mit
+
+written in r
+written in python
+written in c
+written in java
+implemented in r
+implemented in python
+implemented in c
+implemented in java
+
+linux windows
+linux and windows
+linux mac
+linux and mac
+windows linux
+windows and linux
+windows mac
+windows and mac
+
+pdb format
+fasta format
+pdb file
+gene identifiers
+tab-delimited
+executables
+fastq
+
+license is available
+server is available
+server available
+package is available
+package available
+available as web
+available web
+available as r
+available r
+
+web server
+webserver
+web packages
+
+server predicts
+server allows
+server can
+server provides
+
+stand-alone software
+standalone software
+stand-alone version
+standalone version
+
+code and binaries
+code binaries
+code and documentation
+code documentation
+
+tool is freely
+package is freely
+server is freely
+application is freely
+documentation is freely
+code is freely
+freely accessed
+
+provides user-friendly
+login requirement
+programmatic access
+package that provides
+package provides
+rest api

@@ -1,0 +1,125 @@
+user guide
+licensed under
+query protein
+mac os x
+pre-compiled
+precompiled
+available for academic
+bruijn graph
+linux
+pdb files
+academic users
+freely downloaded
+raw sequencing
+non-commercial use
+noncommercial use
+source code
+user manual
+easy-to-use web
+input sequences
+available in bioinformatics
+user-supplied
+text files
+bioinformatics online
+available as open-source
+from pdb
+read alignment
+fasta
+de bruijn
+documentation is available
+documentation available
+login
+license from
+academic use
+chip-seq datasets
+user-provided
+available under
+freely available
+annotation information
+javascript
+scoring matrices
+rna-seq experiments
+query sequence
+code is available
+code available
+sequence sets
+public web
+implemented in web
+implemented web
+k-mers
+can be downloaded
+file formats
+takes as input
+freely accessible
+binaries
+sequence annotation
+short reads
+virtual machine
+intuitive graphical
+multi-threaded
+multithreaded
+input sequence
+input files
+free and open-source
+heatmaps
+new web
+from rna-seq
+motif discovery
+rna-seq reads
+users can easily
+interactive visualization
+allows users
+output files
+aligner
+assemblers
+enables users
+current release
+pymol
+graphical interface
+source codes
+text file
+sbml
+docker
+aligners
+query sequences
+annotates
+publication-quality
+downloadable
+psi-blast
+perl
+python
+command-line
+users can
+allowing users
+can be queried
+present a web
+present web
+gpl
+assembler
+user-friendly graphical
+position weight
+downstream analysis
+user-friendly web
+annotation data
+manually curated
+read mapping
+open source
+executable
+chip-seq data
+source license
+our web
+variant calling
+k-mer
+kmer
+first release
+upload
+ngs data
+download
+operating systems
+smith-waterman
+platform-independent
+sequencing reads
+data formats
+java-based
+position-specific scoring
+unix

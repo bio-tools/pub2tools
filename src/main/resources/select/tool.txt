@@ -1,0 +1,26 @@
+# plural is added automatically
+tool
+software
+database
+algorithm
+package
+interface
+application
+program
+framework
+platform
+resource
+pipeline
+project
+library
+ontology
+service
+suite
+workflow
+repository
+portal
+toolkit
+toolbox
+script
+app
+workbench

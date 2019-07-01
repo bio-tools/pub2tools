@@ -1,0 +1,5 @@
+# plural is added automatically
+server
+browser
+plugin
+applet

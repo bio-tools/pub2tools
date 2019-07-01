@@ -169,8 +169,12 @@ public final class Test {
 		try (Database db = new Database(database)) {
 			for (PublicationIds publicationIds : db.getPublicationIds()) {
 				Set<String> tokens = new HashSet<>();
-				for (String token : preProcessor.process(db.getPublication(publicationIds).getAbstract().getContent())) {
+				List<String> abstractTokens = preProcessor.process(db.getPublication(publicationIds).getAbstract().getContent());
+				for (String token : abstractTokens) {
 					tokens.add(token);
+				}
+				for (int i = 0; i < abstractTokens.size() - 1; ++i) {
+					tokens.add(abstractTokens.get(i) + " " + abstractTokens.get(i + 1));
 				}
 				for (String token : tokens) {
 					tokenCount.merge(token, 1, (x, y) -> x + y);
@@ -206,7 +210,7 @@ public final class Test {
 			System.err.print(PubFetcher.progress(current, last, start) + "  \r");
 
 			try {
-				String abstractQuery = new URI("https", "www.ebi.ac.uk", "/europepmc/webservices/rest/search", "resulttype=idlist&format=xml&query=abstract:" + token.getKey() + " src:med" + email, null).toASCIIString();
+				String abstractQuery = new URI("https", "www.ebi.ac.uk", "/europepmc/webservices/rest/search", "resulttype=idlist&format=xml&query=abstract:\"" + token.getKey() + "\" src:med" + email, null).toASCIIString();
 				Document doc = fetcher.getDoc(abstractQuery, false, fetcherArgs);
 				if (doc != null) {
 					Element hitCount = doc.getElementsByTag("hitCount").first();

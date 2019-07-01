@@ -1307,13 +1307,13 @@ public final class Pass1 {
 	static void run(Path outputPath, PreProcessor preProcessor, String logPrefix) throws IOException {
 		Marker mainMarker = MarkerManager.getMarker(Pub2Tools.MAIN_MARKER);
 
-		List<String> hostIgnore = PubFetcher.getResource(Pass1.class, "resources/host_ignore.txt");
-		List<String> beforeTier1 = PubFetcher.getResource(Pass1.class, "resources/before_tier1.txt");
-		List<String> beforeTier2 = PubFetcher.getResource(Pass1.class, "resources/before_tier2.txt");
-		List<String> beforeTier3 = PubFetcher.getResource(Pass1.class, "resources/before_tier3.txt");
-		List<String> afterTier1 = PubFetcher.getResource(Pass1.class, "resources/after_tier1.txt");
-		List<String> afterTier2 = PubFetcher.getResource(Pass1.class, "resources/after_tier2.txt");
-		List<String> afterTier3 = PubFetcher.getResource(Pass1.class, "resources/after_tier3.txt");
+		List<String> hostIgnore = PubFetcher.getResource(Pass1.class, "pass1/host_ignore.txt");
+		List<String> beforeTier1 = PubFetcher.getResource(Pass1.class, "pass1/before_tier1.txt");
+		List<String> beforeTier2 = PubFetcher.getResource(Pass1.class, "pass1/before_tier2.txt");
+		List<String> beforeTier3 = PubFetcher.getResource(Pass1.class, "pass1/before_tier3.txt");
+		List<String> afterTier1 = PubFetcher.getResource(Pass1.class, "pass1/after_tier1.txt");
+		List<String> afterTier2 = PubFetcher.getResource(Pass1.class, "pass1/after_tier2.txt");
+		List<String> afterTier3 = PubFetcher.getResource(Pass1.class, "pass1/after_tier3.txt");
 
 		String idfFile = outputPath.resolve(Common.IDF_FILE).toString();
 		logger.info(mainMarker, "{}Loading IDF from {}", logPrefix, idfFile);

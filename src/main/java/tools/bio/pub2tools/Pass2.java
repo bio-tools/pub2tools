@@ -956,10 +956,10 @@ public final class Pass2 {
 	static void run(Path outputPath, PreProcessor preProcessor, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException {
 		Marker mainMarker = MarkerManager.getMarker(Pub2Tools.MAIN_MARKER);
 
-		List<String> license = PubFetcher.getResource(Pass2.class, "resources/license.txt");
+		List<String> license = PubFetcher.getResource(Pass2.class, "pass2/license.txt");
 		List<License> licenses = license.stream().map(l -> new License(l)).collect(Collectors.toList());
-		List<String> language = PubFetcher.getResource(Pass2.class, "resources/language.txt");
-		List<String> languageKeywords = PubFetcher.getResource(Pass2.class, "resources/language_keywords.txt");
+		List<String> language = PubFetcher.getResource(Pass2.class, "pass2/language.txt");
+		List<String> languageKeywords = PubFetcher.getResource(Pass2.class, "pass2/language_keywords.txt");
 		List<Language> languages = language.stream().map(l -> new Language(l)).collect(Collectors.toList());
 
 		Scrape scrape = new Scrape(fetcherArgs.getPrivateArgs().getJournalsYaml(), fetcherArgs.getPrivateArgs().getWebpagesYaml());

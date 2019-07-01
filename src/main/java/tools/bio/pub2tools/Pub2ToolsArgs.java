@@ -87,6 +87,12 @@ public class Pub2ToolsArgs extends BasicArgs {
 	@Parameter(names = { "--biotools", "--biotools-json" }, description = "TODO")
 	String biotools = null;
 
+	@Parameter(names = { "--from", "--from-date" }, description = "TODO")
+	String from = null;
+
+	@Parameter(names = { "--to", "--to-date" }, description = "TODO")
+	String to = null;
+
 	@Parameter(names = { "--pub", "--pub-ids", "--pub-file" }, description = "TODO")
 	String pub = null;
 
@@ -101,14 +107,6 @@ public class Pub2ToolsArgs extends BasicArgs {
 
 	@Parameter(names = { "--verbose" }, description = "TODO")
 	LogLevel verbose = LogLevel.OFF;
-
-	// TODO remove
-	@Parameter(names = { "-mesh-query" }, description = "TODO")
-	boolean meshQuery = false;
-
-	// TODO remove
-	@Parameter(names = { "-journal-query" }, description = "TODO")
-	boolean journalQuery = false;
 
 	@Parameter(names = { "-before-after" }, description = "TODO")
 	boolean beforeAfter = false;

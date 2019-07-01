@@ -1,0 +1,181 @@
+our tool
+tool named
+present a software
+present software
+our software
+other software
+external databases
+package is also
+package also
+data package
+package includes
+package that can
+package can
+package is designed
+package designed
+package called
+platform-independent
+cross-platform
+analysis pipelines
+analysis workflows
+swissprot
+rfam
+ensembl
+uniprot
+wiki
+pre-computed
+precomputed
+restful
+released under
+mysql
+java
+back-end
+backend
+annotating
+license
+curated
+downloading
+c source
+annotations
+r language
+curation
+gui
+data types
+sequence structure
+multiple sequence
+viewer
+freely
+downloaded
+paired-end
+query
+implements
+alignments
+reads
+visualizations
+open source
+annotate
+annotation
+browsing
+pdb
+chip-seq
+cytoscape
+protein data
+text-mining
+metadata
+structure prediction
+desktop
+computes
+bioinformatics
+interactively
+identifiers
+protein structures
+queries
+data bank
+standalone
+stand-alone
+gene sets
+formats
+repository
+rna-seq
+rnaseq
+biological data
+repositories
+biologists
+protein sequence
+datasets
+outperforms
+expression data
+ngs
+web
+intuitive
+file
+publicly
+graphics
+existing methods
+accessed
+annotated
+simulated data
+gene set
+real data
+kegg
+protein structure
+files
+user
+website
+ontology
+sequence data
+integrates
+tutorial
+computationally
+performs
+matlab
+code
+markov
+our method
+alignment
+data sets
+support vector
+graph
+installation
+benchmark
+genomes
+api
+computing
+graphical
+interactive
+visualization
+programming
+illumina
+automatically
+computational
+format
+easy-to-use
+inference
+open-access
+dataset
+windows
+high-throughput
+manually
+secondary structure
+proteomics
+modules
+accessible
+visualize
+filtering
+next-generation
+have developed
+state-of-the-art
+online
+searching
+searches
+implemented
+documentation
+introduce
+sequencing
+clustering
+bayesian
+we developed
+predictions
+input
+identifies
+genomic
+users
+availability
+machine
+automated
+functionality
+microarray
+supplementary
+uses
+flexible
+available
+we present
+genome
+sequences
+enables
+technologies
+written
+networks
+shiny
+mapping
+analyzing
