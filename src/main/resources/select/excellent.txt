@@ -1,16 +1,27 @@
 github
+github.com
+www.github.com
 sourceforge
+sourceforge.net
 code.google.com
 bitbucket
+bitbucket.org
 gitlab
+gitlab.com
 pypi
-raghava
+pypi.org
+pypi.python.org
 
 bioconductor
+bioconductor.org
+www.bioconductor.org
 r package
 cran
+cran.r-project.org
 bioc
 comprehensive r archive network
+
+raghava
 
 our package
 python package
@@ -94,3 +105,5 @@ programmatic access
 package that provides
 package provides
 rest api
+
+freely available

@@ -32,8 +32,8 @@ public class Suggestion2 extends Suggestion1 {
 	private static final double SCORE_MIN = 1000;
 
 	private static final double SCORE2_MIN = 1072.1;
-
 	private static final double SCORE2_LOW_CONFIDENCE = 1750;
+	private static final double SCORE2_MEDIUM_CONFIDENCE = 3000;
 
 	private double score2 = -1;
 
@@ -81,12 +81,23 @@ public class Suggestion2 extends Suggestion1 {
 		return score < SCORE_MIN;
 	}
 
-	public boolean include() {
+	public boolean confident() {
 		return score >= SCORE_MIN || score2 >= SCORE2_MIN;
 	}
 
-	public boolean lowConfidence() {
-		return score < SCORE_MIN && score2 >= SCORE2_MIN && score2 <= SCORE2_LOW_CONFIDENCE;
+	public Confidence confidence() {
+		if (score >= SCORE_MIN) {
+			return Confidence.high;
+		}
+		if (score2 > SCORE2_MEDIUM_CONFIDENCE) {
+			return Confidence.high;
+		} else if (score2 > SCORE2_LOW_CONFIDENCE) {
+			return Confidence.medium;
+		} else if (score2 >= SCORE2_MIN) {
+			return Confidence.low;
+		} else {
+			return Confidence.very_low;
+		}
 	}
 
 	public double getScore2() {

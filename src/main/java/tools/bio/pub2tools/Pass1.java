@@ -133,12 +133,12 @@ public final class Pass1 {
 	private static final Pattern BIOTOOLS_SCHEMA_NAME_APOSTROPHE_QUOTATION_SPACE = Pattern.compile("([\\p{L}\\p{N}])['\"\\u0060\\u00B4\\u2018\\u2019\\u02BC\\u201B\\u0091\\u0092\\u00AB\\u00BB\\u201A\\u201C\\u201D\\u201E\\u201F\\u2039\\u203A\\u2E42]+([\\p{L}\\p{N}])");
 	private static final Pattern BIOTOOLS_SCHEMA_PMID_PATTERN = Pattern.compile("^[1-9][0-9]{0,8}$");
 	private static final Pattern BIOTOOLS_SCHEMA_PMCID_PATTERN = Pattern.compile("^(PMC)[1-9][0-9]{0,8}$");
-	// TODO too restrictive https://github.com/bio-tools/biotoolsSchema/issues/8
-	private static final Pattern BIOTOOLS_SCHEMA_DOI_PATTERN = Pattern.compile("^10.[0-9]{4,9}[A-Za-z0-9:;)(_/.-]+$");
+	// TODO https://github.com/bio-tools/biotoolsSchema/issues/8
+	private static final Pattern BIOTOOLS_SCHEMA_DOI_PATTERN = Pattern.compile("^10\\.[0-9]{4,9}/[\\[\\]<>A-Za-z0-9:;)(_/.-]+$");
 	private static final int BIOTOOLS_SCHEMA_CREDIT_NAME_MIN = 1;
 	private static final int BIOTOOLS_SCHEMA_CREDIT_NAME_MAX = 100;
-	// TODO too restrictive (last character can be 'X') https://github.com/bio-tools/biotoolsSchema/issues/142
-	private static final Pattern BIOTOOLS_SCHEMA_CREDIT_ORCIDID_PATTERN = Pattern.compile("^https?://orcid.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}$");
+	// TODO currently only https allowed (and "." is unescaped)
+	private static final Pattern BIOTOOLS_SCHEMA_CREDIT_ORCIDID_PATTERN = Pattern.compile("^https://orcid.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$");
 	private static final Pattern BIOTOOLS_SCHEMA_CREDIT_EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9_]+([-+.'][A-Za-z0-9_]+)*@[A-Za-z0-9_]+([-.][A-Za-z0-9_]+)*\\.[A-Za-z0-9_]+([-.][A-Za-z0-9_]+)*$");
 
 	private static final Pattern FIX_LINK = Pattern.compile("([.]?[\"(\\[{<>}\\])]+[.]?|\\.\\p{Lu}|--)[\\p{L}\\p{N}'-]+$");
@@ -1159,6 +1159,12 @@ public final class Pass1 {
 				logger.warn("Credit name pruned to max from '{}' to '{}' (from pub {})", ca.getName(), name, result.getPubIds().toString());
 			}
 			ca.setName(name);
+			// TODO possibly don't require https for orcidid
+			if (ca.getOrcid().startsWith("http://")) {
+				String httpsOrcid = "https://" + ca.getOrcid().substring("http://".length());
+				logger.debug("Changed credit orcidid to HTTPS (from {} to {})", ca.getOrcid(), httpsOrcid);
+				ca.setOrcid(httpsOrcid);
+			}
 			if (!ca.getOrcid().isEmpty() && !BIOTOOLS_SCHEMA_CREDIT_ORCIDID_PATTERN.matcher(ca.getOrcid()).matches()) {
 				logger.warn("Discarded invalid credit orcidid '{}' (from pub {})", ca.getOrcid(), result.getPubIds().toString());
 				ca.setOrcid("");

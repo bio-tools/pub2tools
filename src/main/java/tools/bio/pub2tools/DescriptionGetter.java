@@ -258,7 +258,8 @@ public final class DescriptionGetter {
 					|| documentationLink.getType() == DocumentationType.INSTALLATION_INSTRUCTIONS
 					|| documentationLink.getType() == DocumentationType.TUTORIAL
 					|| documentationLink.getType() == DocumentationType.TRAINING_MATERIAL
-					|| documentationLink.getType() == DocumentationType.API_DOCUMENTATION) {
+					|| documentationLink.getType() == DocumentationType.API_DOCUMENTATION
+					|| documentationLink.getType() == DocumentationType.FAQ) {
 				descriptionsFromWebpage(descriptions, documentationLink.getUrl(), db, scrape, minLength, name, true, preProcessor);
 			}
 		}
@@ -273,12 +274,16 @@ public final class DescriptionGetter {
 		return descriptions.stream().map(d -> d.getDescription()).collect(Collectors.joining(" | "));
 	}
 
-	static String get(Suggestion2 suggestion, boolean homepageBroken, boolean homepageMissing, List<ToolInput> biotools, Result2 result, String homepage, Set<BiotoolsLink<LinkType>> linkLinks, Set<BiotoolsLink<DocumentationType>> documentationLinks, Set<BiotoolsLink<DownloadType>> downloadLinks, Database db, Scrape scrape, String name, PreProcessor preProcessor) {
+	static String get(Suggestion2 suggestion, boolean include, boolean homepageBroken, boolean homepageMissing, List<ToolInput> biotools, Result2 result, String homepage, Set<BiotoolsLink<LinkType>> linkLinks, Set<BiotoolsLink<DocumentationType>> documentationLinks, Set<BiotoolsLink<DownloadType>> downloadLinks, Database db, Scrape scrape, String name, PreProcessor preProcessor) {
 		List<String> messages = new ArrayList<>();
-		if (suggestion == null || !suggestion.include()) {
+		if (suggestion == null || !include) {
 			messages.add("NOT INCLUDED!");
-		} else if (suggestion.lowConfidence()) {
-			messages.add("LOW CONFIDENCE!");
+		}
+		if (suggestion != null) {
+			Confidence confidence = suggestion.confidence();
+			if (confidence != Confidence.high) {
+				messages.add(confidence.name().toUpperCase() + " CONFIDENCE!");
+			}
 		}
 		if (homepageBroken) {
 			messages.add("HOMEPAGE BROKEN!");
@@ -301,7 +306,7 @@ public final class DescriptionGetter {
 		if (!result.getNameMatch().isEmpty()) {
 			messages.add("NAME (" + suggestion.getExtracted() + ") SIMILAR TO (PUB. DIFFERENT) " + result.getNameMatch().stream().map(e -> biotools.get(e)).map(q -> biotoolsPrefix + q.getBiotoolsID() + " (" + q.getName() + ")").collect(Collectors.joining(", ")));
 		}
-		if (!result.getLinkMatch().isEmpty()) {
+		if (!result.getLinkMatch().isEmpty() && result.getLinkMatch().size() <= Common.LINK_MATCH_DISPLAY_LIMIT) {
 			messages.add("COMMON LINK WITH (PUB. & NAME DIFFERENT) " +
 				IntStream.range(0, result.getLinkMatch().size())
 					.mapToObj(i -> biotoolsPrefix + biotools.get(result.getLinkMatch().get(i)).getBiotoolsID() + " (" +

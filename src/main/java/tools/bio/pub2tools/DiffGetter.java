@@ -20,6 +20,7 @@
 package tools.bio.pub2tools;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -117,7 +118,7 @@ public final class DiffGetter {
 		}
 	}
 
-	static Diff makeDiff(double scoreScore2, Set<Integer> possiblyRelated, List<ToolInput> biotools, int existing, List<PubIds> publications, Set<PubIds> addPublications, String modifyName, String homepage, Set<BiotoolsLink<LinkType>> links, Set<BiotoolsLink<DownloadType>> downloads, Set<BiotoolsLink<DocumentationType>> documentations, Provenance license, List<Provenance> languages, List<CorrespAuthor> credits, Database db) {
+	static Diff makeDiff(double scoreScore2, Set<Integer> possiblyRelated, List<ToolInput> biotools, int existing, List<PubIds> publications, Collection<PubIds> addPublications, String modifyName, String homepage, Set<BiotoolsLink<LinkType>> links, Set<BiotoolsLink<DownloadType>> downloads, Set<BiotoolsLink<DocumentationType>> documentations, Provenance license, List<Provenance> languages, List<CorrespAuthor> credits, Database db) {
 		Diff diff = new Diff();
 
 		diff.setScoreScore2(scoreScore2);
@@ -129,16 +130,18 @@ public final class DiffGetter {
 		diff.setAddPublications(addPublications);
 		diff.setModifyName(modifyName);
 
-		for (PubIds pubIds : publications) {
-			if (biotool.getPublication() != null) {
-				for (org.edamontology.edammap.core.input.json.Publication publicationIds : biotool.getPublication()) {
-					if ((!pubIds.getPmid().isEmpty() && publicationIds.getPmid() != null && publicationIds.getPmid().trim().equals(pubIds.getPmid())
-							|| !pubIds.getPmcid().isEmpty() && publicationIds.getPmcid() != null && publicationIds.getPmcid().trim().equals(pubIds.getPmcid())
-							|| !pubIds.getDoi().isEmpty() && publicationIds.getDoi() != null && PubFetcher.normaliseDoi(publicationIds.getDoi().trim()).equals(pubIds.getDoi()))
-						&& (!pubIds.getPmid().isEmpty() && publicationIds.getPmid() != null && !publicationIds.getPmid().isEmpty() && !publicationIds.getPmid().trim().equals(pubIds.getPmid())
-							|| !pubIds.getPmcid().isEmpty() && publicationIds.getPmcid() != null && !publicationIds.getPmcid().isEmpty() && !publicationIds.getPmcid().trim().equals(pubIds.getPmcid())
-							|| !pubIds.getDoi().isEmpty() && publicationIds.getDoi() != null && !publicationIds.getDoi().isEmpty() && !PubFetcher.normaliseDoi(publicationIds.getDoi().trim()).equals(pubIds.getDoi()))) {
-						diff.addModifyPublication(pubIds);
+		if (publications != null) {
+			for (PubIds pubIds : publications) {
+				if (biotool.getPublication() != null) {
+					for (org.edamontology.edammap.core.input.json.Publication publicationIds : biotool.getPublication()) {
+						if ((!pubIds.getPmid().isEmpty() && publicationIds.getPmid() != null && publicationIds.getPmid().trim().equals(pubIds.getPmid())
+								|| !pubIds.getPmcid().isEmpty() && publicationIds.getPmcid() != null && publicationIds.getPmcid().trim().equals(pubIds.getPmcid())
+								|| !pubIds.getDoi().isEmpty() && publicationIds.getDoi() != null && PubFetcher.normaliseDoi(publicationIds.getDoi().trim()).equals(pubIds.getDoi()))
+							&& (!pubIds.getPmid().isEmpty() && publicationIds.getPmid() != null && !publicationIds.getPmid().isEmpty() && !publicationIds.getPmid().trim().equals(pubIds.getPmid())
+								|| !pubIds.getPmcid().isEmpty() && publicationIds.getPmcid() != null && !publicationIds.getPmcid().isEmpty() && !publicationIds.getPmcid().trim().equals(pubIds.getPmcid())
+								|| !pubIds.getDoi().isEmpty() && publicationIds.getDoi() != null && !publicationIds.getDoi().isEmpty() && !PubFetcher.normaliseDoi(publicationIds.getDoi().trim()).equals(pubIds.getDoi()))) {
+							diff.addModifyPublication(pubIds);
+						}
 					}
 				}
 			}

@@ -81,8 +81,9 @@ public final class Common {
 
 	private static final Pattern LINK_HELPDESK = Pattern.compile("(?i)(^|[^\\p{L}-])(contact|contactus|help[-_]?desk)s?([^\\p{L}-]|$)");
 	private static final Pattern LINK_ISSUES = Pattern.compile("(?i)^(https?://)?(www\\.)?(github\\.com/+[^/]+/+[^/]+/+issues|sourceforge\\.net/+p/+[^/]+/+tickets|code\\.google\\.com/+(archive/+)?p/+[^/]+/+issues|bitbucket\\.org/+[^/]+/+[^/]+/+issues)([^\\p{L}]|$)");
-	private static final Pattern LINK_LIST_ADDR = Pattern.compile("(?i)^(https?://)?(www\\.)?(groups\\.google\\.com|gitter\\.im|sourceforge\\.net/+p/+[^/]+/+discussion|sourceforge\\.net/+projects/+[^/]+/+lists)([^\\p{L}]|$)");
+	private static final Pattern LINK_LIST_ADDR = Pattern.compile("(?i)^(https?://)?(www\\.)?(sourceforge\\.net/+projects/+[^/]+/+lists)([^\\p{L}]|$)");
 	private static final Pattern LINK_LIST_BOTH = Pattern.compile("(?i)(^|[^\\p{L}-])(mailman|listinfo|mailing[-_]?lists?)([^\\p{L}-]|$)");
+	private static final Pattern LINK_FORUM = Pattern.compile("(?i)^(https?://)?(www\\.)?(groups\\.google\\.com|gitter\\.im|sourceforge\\.net/+p/+[^/]+/+discussion)([^\\p{L}]|$)");
 	private static final Pattern LINK_REGISTRY = Pattern.compile("(?i)^(https?://)?(www\\.)?(mybiosoftware\\.com|biocatalogue\\.org)([^\\p{L}]|$)");
 	private static final Pattern LINK_REPOSITORY = Pattern.compile("(?i)^(https?://)?(www\\.)?(bioconductor\\.org|github\\.com|sourceforge\\.net|code\\.google\\.com|cran\\.r-project\\.org|bitbucket\\.org|gitlab\\.com|pypi\\.(python\\.)?org|apps\\.cytoscape\\.org)([^\\p{L}]|$)");
 	private static final Pattern LINK_SOCIAL = Pattern.compile("(?i)^(https?://)?(www\\.)?(twitter\\.com|facebook\\.com)([^\\p{L}]|$)");
@@ -99,7 +100,8 @@ public final class Common {
 	private static final Pattern DOCUMENTATION_API = Pattern.compile("(?i)(^|[^\\p{L}-])(api|apidoc)s?([^\\p{L}-]|$)");
 	private static final String DOCUMENTATION_CITE_EITHER = "citing";
 	private static final Pattern DOCUMENTATION_CITE = Pattern.compile("(?i)((^|[^\\p{L}-])(references|cite|citation)s?([^\\p{L}-]|$))|((" + DOCUMENTATION_CITE_EITHER + ")s?([^\\p{L}-]|$))|((^|[^\\p{L}-])(" + DOCUMENTATION_CITE_EITHER + "))");
-	private static final String DOCUMENTATION_GENERAL_EITHER = "faq|about|read[-_]?me|information|overview|description|features";
+	private static final Pattern DOCUMENTATION_FAQ = Pattern.compile("(?i)(^|[^\\p{L}])faqs?([^\\p{L}]|$)");
+	private static final String DOCUMENTATION_GENERAL_EITHER = "about|read[-_]?me|information|overview|description|features";
 	private static final Pattern DOCUMENTATION_GENERAL = Pattern.compile("(?i)((" + DOCUMENTATION_GENERAL_EITHER + ")s?([^\\p{L}-]|$))|((^|[^\\p{L}-])(" + DOCUMENTATION_GENERAL_EITHER + "))");
 	private static final String DOCUMENTATION_INSTALL_EITHER = "install|installation|installing";
 	private static final Pattern DOCUMENTATION_INSTALL = Pattern.compile("(?i)((" + DOCUMENTATION_INSTALL_EITHER + ")s?([^\\p{L}-]|$))|((^|[^\\p{L}-])(" + DOCUMENTATION_INSTALL_EITHER + "))");
@@ -115,14 +117,15 @@ public final class Common {
 	private static final Pattern DOCUMENTATION_WIKI = Pattern.compile("(?i)^(https?://)?(www\\.)?(github\\.com/+[^/]+/+[^/]+/+wiki|sourceforge\\.net/+p/+[^/]+/wiki|sourceforge\\.net/+p/+[^/]+/+home|code\\.google\\.com/+(archive/+)?p/+[^/]+/+wikis?|bitbucket\\.org/+[^/]+/+[^/]+/+wiki)([^\\p{L}]|$)");
 	private static final Pattern DOCUMENTATION_EXT = Pattern.compile("(?i)\\.(pdf|ps|doc|docx|ppt|pptx)([^\\p{L}-]|$)");
 
-	// TODO unescaped dot metacharacter https://github.com/bio-tools/biotoolsSchema/issues/124
-	static final Pattern BIOTOOLS_SCHEMA_URL_PATTERN = Pattern.compile("^https?://[^\\s/$.?#].[^\\s]*$");
-	static final Pattern BIOTOOLS_SCHEMA_URLFTP_PATTERN = Pattern.compile("^(https?|s?ftp)://[^\\s/$.?#].[^\\s]*$");
+	static final Pattern BIOTOOLS_SCHEMA_URL_PATTERN = Pattern.compile("^https?://[^\\s/$.?#]*\\.[^\\s]*$");
+	static final Pattern BIOTOOLS_SCHEMA_URLFTP_PATTERN = Pattern.compile("^(https?|s?ftp)://[^\\s/$.?#]*\\.[^\\s]*$");
 
 	private static final Pattern PUNCTUATION_NUMBERS = Pattern.compile("[\\p{P}\\p{S}\\p{N}]+");
 	private static final Pattern NAME_SEPARATOR = Pattern.compile("[ \\u002D\\u2010]+");
 	private static final Pattern PERIOD = Pattern.compile("[.]");
 	private static final Pattern UPPERCASE = Pattern.compile("^\\{Lu}+$");
+
+	static final int LINK_MATCH_DISPLAY_LIMIT = 5;
 
 	static String prependHttp(String url) {
 		if (!SCHEMA_START.matcher(url).find()) {
@@ -230,6 +233,8 @@ public final class Common {
 	private static BiotoolsLink<DocumentationType> getDocumentationLink(String link) {
 		if (DOCUMENTATION_API.matcher(link).find()) {
 			return new BiotoolsLink<DocumentationType>(link, DocumentationType.API_DOCUMENTATION);
+		} else if (DOCUMENTATION_FAQ.matcher(link).find()) {
+			return new BiotoolsLink<DocumentationType>(link, DocumentationType.FAQ);
 		} else if (DOCUMENTATION_TRAINING.matcher(link).find()) {
 			return new BiotoolsLink<DocumentationType>(link, DocumentationType.TRAINING_MATERIAL);
 		} else if (DOCUMENTATION_TUTORIAL.matcher(link).find()) {
@@ -283,6 +288,8 @@ public final class Common {
 				linkLinks.add(new BiotoolsLink<LinkType>(link, LinkType.ISSUE_TRACKER));
 			} else if (LINK_LIST_ADDR.matcher(link).find()) {
 				linkLinks.add(new BiotoolsLink<LinkType>(link, LinkType.MAILING_LIST));
+			} else if (LINK_FORUM.matcher(link).find()) {
+				linkLinks.add(new BiotoolsLink<LinkType>(link, LinkType.DISCUSSION_FORUM));
 			} else if (LINK_REPOSITORY.matcher(link).find()) {
 				linkLinks.add(new BiotoolsLink<LinkType>(link, LinkType.REPOSITORY));
 			} else if (LINK_LIST_BOTH.matcher(link).find()) {
@@ -293,7 +300,7 @@ public final class Common {
 				linkLinks.add(new BiotoolsLink<LinkType>(link, LinkType.SOCIAL_MEDIA));
 			} else if (DOWNLOAD_PAGE.matcher(link).find()) {
 				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.DOWNLOADS_PAGE));
-			} else {
+			} else if (!link.isEmpty()) {
 				linkLinks.add(new BiotoolsLink<LinkType>(link, LinkType.OTHER));
 			}
 		}

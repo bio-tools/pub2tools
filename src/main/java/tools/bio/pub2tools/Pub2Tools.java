@@ -307,7 +307,7 @@ public final class Pub2Tools {
 
 		int resultsSize;
 		try {
-			resultsSize = Cli.run(cliArgs, version, logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG);
+			resultsSize = Cli.run(cliArgs, version, logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG, true);
 		} finally {
 			Cli.closeDatabase();
 		}
@@ -411,8 +411,8 @@ public final class Pub2Tools {
 			copyBiotools(outputPath, args.biotools, args.fetcherArgs, "");
 		}
 
-		if (args.selectPub != null && requiredArgs(new String[] { "from", "to" }, "selectPub", args)) {
-			String date = SelectPub.getDate(args.from, args.to);
+		if (args.selectPub != null) {
+			String date = SelectPub.getDate(args.from, args.to, args.month, args.day, " for -select-pub");
 			checkStepNone(outputPath);
 			selectPub(outputPath, date, args.fetcherArgs, "");
 		}
@@ -488,10 +488,7 @@ public final class Pub2Tools {
 			logger.info(mainMarker, "0 setup");
 			String date = null;
 			if (args.pub == null) {
-				if (args.from == null || args.to == null) {
-					throw new IllegalArgumentException("Parameters --from and --to are required if --pub is missing!");
-				}
-				date = SelectPub.getDate(args.from, args.to);
+				date = SelectPub.getDate(args.from, args.to, args.month, args.day, " if --pub is missing");
 			}
 			checkStepNone(outputPath);
 			if (args.pub != null) {

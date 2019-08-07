@@ -118,6 +118,9 @@ public final class Pass2 {
 
 	private static final Pattern TOOL_TITLE_NOT_ALPHANUM = Pattern.compile("[^\\p{L}\\p{N}]");
 
+	private static final Pattern HOMEPAGE_EXCLUDE = Pattern.compile("(?i)^(https?://)?(www\\.)?(clinicaltrials\\.gov|osf\\.io|annualreviews\\.org|w3\\.org|creativecommons\\.org)([^\\p{L}]|$)");
+	private static final Pattern JOURNAL_EXCLUDE = Pattern.compile("(?i)^(Systematic reviews|The Cochrane Database of Systematic Reviews)$");
+
 	private static boolean isBroken(String url, Database db) {
 		if (db.getWebpage(url, false) != null && !db.getWebpage(url, false).isBroken()) {
 			return false;
@@ -128,13 +131,42 @@ public final class Pass2 {
 		return true;
 	}
 
+	private static boolean creditMatch(List<ToolInput> biotools, int i, List<CorrespAuthor> credits) {
+		List<Credit> creditsBiotools = biotools.get(i).getCredit();
+		if (creditsBiotools != null) {
+			for (Credit creditBiotools : creditsBiotools) {
+				for (CorrespAuthor credit : credits) {
+					if (creditBiotools.getName() != null && Common.creditNameEqual(credit.getName(), creditBiotools.getName())
+							|| creditBiotools.getOrcidid() != null && Common.creditOrcidEqual(credit.getOrcid(), creditBiotools.getOrcidid())
+							|| creditBiotools.getEmail() != null && Common.creditEmailEqual(credit.getEmail(), creditBiotools.getEmail())) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	private static String removeLowestSubdomain(String urlTrimmed) {
+		int slash = urlTrimmed.indexOf('/');
+		int firstDot = urlTrimmed.indexOf('.');
+		if (firstDot >= 0) {
+			int secondDot = urlTrimmed.indexOf('.', firstDot + 1);
+			if (secondDot >= 0) {
+				if (slash < 0 || secondDot < slash) {
+					return urlTrimmed.substring(firstDot + 1);
+				}
+			}
+		}
+		return urlTrimmed;
+	}
+
 	private static void linksMatch(Map<Integer, List<String>> linkMatchMap, String suggestionLink, Suggestion2 suggestion, List<List<String>> queryLinks) {
 		suggestionLink = Common.trimUrl(suggestionLink);
 		for (int j = 0; j < queryLinks.size(); ++j) {
 			if (suggestion.getPublicationAndNameExisting() != null && suggestion.getPublicationAndNameExisting().contains(j)
 					|| suggestion.getNameExistingSomePublicationDifferent() != null && suggestion.getNameExistingSomePublicationDifferent().contains(j)
-					|| suggestion.getSomePublicationExistingNameDifferent() != null && suggestion.getSomePublicationExistingNameDifferent().contains(j)
-					|| suggestion.getNameExistingPublicationDifferent() != null && suggestion.getNameExistingPublicationDifferent().contains(j)) {
+					|| suggestion.getSomePublicationExistingNameDifferent() != null && suggestion.getSomePublicationExistingNameDifferent().contains(j)) {
 				continue;
 			}
 			List<String> matchedLinks = null;
@@ -143,14 +175,30 @@ public final class Pass2 {
 					if (matchedLinks == null) {
 						matchedLinks = new ArrayList<>();
 					}
-					matchedLinks.add(queryLink);
-				} else if (suggestionLink.startsWith(queryLink)) {
-					String rest = suggestionLink.substring(queryLink.length() - 1);
-					if (Common.LINK_COMPARE_REST.matcher(rest).matches()) {
-						if (matchedLinks == null) {
-							matchedLinks = new ArrayList<>();
+					matchedLinks.add(suggestionLink);
+				} else {
+					String suggestionLinkTrimmed = removeLowestSubdomain(suggestionLink);
+					String queryLinkTrimmed = removeLowestSubdomain(queryLink);
+					String rest = null;
+					String matchedLink = null;
+					if (suggestionLinkTrimmed.startsWith(queryLinkTrimmed)) {
+						rest = suggestionLinkTrimmed.substring(queryLinkTrimmed.length());
+						matchedLink = queryLinkTrimmed;
+					} else if (queryLinkTrimmed.startsWith(suggestionLinkTrimmed)) {
+						rest = queryLinkTrimmed.substring(suggestionLinkTrimmed.length());
+						matchedLink = suggestionLinkTrimmed;
+					}
+					if (rest != null) {
+						if (!suggestionLinkTrimmed.startsWith("GITHUB.IO") && !suggestionLinkTrimmed.startsWith("SOURCEFORGE.NET")
+								&& !suggestionLinkTrimmed.startsWith("READTHEDOCS.IO") && !suggestionLinkTrimmed.startsWith("R-PROJECT.ORG")) {
+							int slash = rest.indexOf('/');
+							if (slash < 0 || rest.indexOf('/', slash + 1) < 0) {
+								if (matchedLinks == null) {
+									matchedLinks = new ArrayList<>();
+								}
+								matchedLinks.add(matchedLink);
+							}
 						}
-						matchedLinks.add(queryLink);
 					}
 				}
 			}
@@ -194,21 +242,21 @@ public final class Pass2 {
 	private static String chooseHomepage(List<String> links, List<BiotoolsLink<LinkType>> linkLinks, List<BiotoolsLink<DocumentationType>> documentationLinks, Database db) {
 		for (Iterator<BiotoolsLink<LinkType>> it =  linkLinks.iterator(); it.hasNext(); ) {
 			BiotoolsLink<LinkType> linkLink = it.next();
-			if (linkLink.getType() == LinkType.OTHER && Common.BIOTOOLS_SCHEMA_URL_PATTERN.matcher(linkLink.getUrl()).matches()) {
+			if (linkLink.getType() == LinkType.OTHER) {
 				it.remove();
 				return linkLink.getUrl();
 			}
 		}
 		for (Iterator<BiotoolsLink<LinkType>> it =  linkLinks.iterator(); it.hasNext(); ) {
 			BiotoolsLink<LinkType> linkLink = it.next();
-			if (linkLink.getType() == LinkType.REPOSITORY && Common.BIOTOOLS_SCHEMA_URL_PATTERN.matcher(linkLink.getUrl()).matches()) {
+			if (linkLink.getType() == LinkType.REPOSITORY) {
 				it.remove();
 				return linkLink.getUrl();
 			}
 		}
 		for (Iterator<BiotoolsLink<DocumentationType>> it =  documentationLinks.iterator(); it.hasNext(); ) {
 			BiotoolsLink<DocumentationType> documentationLink = it.next();
-			if (documentationLink.getType() == DocumentationType.GENERAL && Common.BIOTOOLS_SCHEMA_URL_PATTERN.matcher(documentationLink.getUrl()).matches()) {
+			if (documentationLink.getType() == DocumentationType.GENERAL) {
 				it.remove();
 				return documentationLink.getUrl();
 			}
@@ -219,8 +267,8 @@ public final class Pass2 {
 					|| documentationLink.getType() == DocumentationType.INSTALLATION_INSTRUCTIONS
 					|| documentationLink.getType() == DocumentationType.TUTORIAL
 					|| documentationLink.getType() == DocumentationType.TRAINING_MATERIAL
-					|| documentationLink.getType() == DocumentationType.API_DOCUMENTATION)
-					&& Common.BIOTOOLS_SCHEMA_URL_PATTERN.matcher(documentationLink.getUrl()).matches()) {
+					|| documentationLink.getType() == DocumentationType.API_DOCUMENTATION
+					|| documentationLink.getType() == DocumentationType.FAQ)) {
 				it.remove();
 				return documentationLink.getUrl();
 			}
@@ -228,7 +276,7 @@ public final class Pass2 {
 		for (String link : links) {
 			link = Common.prependHttp(link);
 			if (db.getWebpage(link, false) != null && !db.getWebpage(link, false).isBroken() || db.getDoc(link, false) != null && !db.getDoc(link, false).isBroken()) {
-				if (!Common.DOWNLOAD_EXT.matcher(link).find() && Common.BIOTOOLS_SCHEMA_URL_PATTERN.matcher(link).matches()) {
+				if (!Common.DOWNLOAD_EXT.matcher(link).find() && Common.BIOTOOLS_SCHEMA_URLFTP_PATTERN.matcher(link).matches()) {
 					return link;
 				}
 			}
@@ -283,18 +331,76 @@ public final class Pass2 {
 		writeField(writer, value, false);
 	}
 
-	private static void addDiffTool(Suggestion2 suggestion, Result2 result, Database db, List<ToolInput> biotools, PreProcessor preProcessor, List<Diff> diffs, List<Tool> tools,
+	private static List<Integer> addDiffTool(Suggestion2 suggestion, boolean include, Result2 result, Database db, List<ToolInput> biotools, PreProcessor preProcessor, List<Diff> diffs, List<Tool> tools,
 			String name, String description, String homepage, Set<BiotoolsLink<LinkType>> linkLinks, Set<BiotoolsLink<DownloadType>> downloadLinks, Set<BiotoolsLink<DocumentationType>> documentationLinks,
 			Provenance bestLicense, Provenance bestAbstractLicense, List<Provenance> allLanguages, List<Provenance> abstractLanguagesUnique, List<CorrespAuthor> credits) {
 		double scoreScore2 = suggestion.getScore2() < 0 ? suggestion.getScore() + 10000 : suggestion.getScore2();
 
+		List<Integer> existing = new ArrayList<>();
+
 		Set<Integer> possiblyRelated = new LinkedHashSet<>();
-		if (suggestion.include()) {
-			if (suggestion.getNameExistingPublicationDifferent() != null) {
-				possiblyRelated.addAll(suggestion.getNameExistingPublicationDifferent());
+		List<Integer> nameExistingPublicationDifferentAddToDiff = new ArrayList<>();
+		List<Integer> nameMatchAddToDiff = new ArrayList<>();
+		if (suggestion.confident()) {
+			List<Integer> linkMatchRemoveFromPossiblyRelated = new ArrayList<>();
+			if (include) {
+				if (suggestion.getNameExistingPublicationDifferent() != null) {
+					for (int i = 0; i < suggestion.getNameExistingPublicationDifferent().size(); ++i) {
+						boolean added = false;
+						for (int j = 0; j < result.getLinkMatch().size(); ++j) {
+							if (suggestion.getNameExistingPublicationDifferent().get(i).equals(result.getLinkMatch().get(j))) {
+								nameExistingPublicationDifferentAddToDiff.add(i);
+								linkMatchRemoveFromPossiblyRelated.add(j);
+								added = true;
+								break;
+							}
+						}
+						if (!added) {
+							if (creditMatch(biotools, suggestion.getNameExistingPublicationDifferent().get(i), credits)) {
+								nameExistingPublicationDifferentAddToDiff.add(i);
+							}
+						}
+					}
+				}
+				for (int i = 0; i < result.getNameMatch().size(); ++i) {
+					boolean added = false;
+					for (int j = 0; j < result.getLinkMatch().size(); ++j) {
+						if (result.getNameMatch().get(i).equals(result.getLinkMatch().get(j))) {
+							nameMatchAddToDiff.add(i);
+							linkMatchRemoveFromPossiblyRelated.add(j);
+							added = true;
+							break;
+						}
+					}
+					if (!added) {
+						if (creditMatch(biotools, result.getNameMatch().get(i), credits)) {
+							nameMatchAddToDiff.add(i);
+						}
+					}
+				}
 			}
-			possiblyRelated.addAll(result.getNameMatch());
-			possiblyRelated.addAll(result.getLinkMatch());
+
+			if (suggestion.getNameExistingPublicationDifferent() != null) {
+				for (int i = 0; i < suggestion.getNameExistingPublicationDifferent().size(); ++i) {
+					if (!nameExistingPublicationDifferentAddToDiff.contains(i)) {
+						possiblyRelated.add(suggestion.getNameExistingPublicationDifferent().get(i));
+					}
+				}
+			}
+			for (int i = 0; i < result.getNameMatch().size(); ++i) {
+				if (!nameMatchAddToDiff.contains(i)) {
+					possiblyRelated.add(result.getNameMatch().get(i));
+				}
+			}
+			List<Integer> possiblyRelatedLinkMatch = new ArrayList<>();
+			for (int i = 0; i < result.getLinkMatch().size(); ++i) {
+				if (!linkMatchRemoveFromPossiblyRelated.contains(i)) {
+					possiblyRelatedLinkMatch.add(result.getLinkMatch().get(i));
+				}
+			}
+			if (possiblyRelatedLinkMatch.size() <= Common.LINK_MATCH_DISPLAY_LIMIT) {
+				possiblyRelated.addAll(possiblyRelatedLinkMatch);
+			}
 			// result.getNameWordMatch() is omitted
 		}
 
@@ -320,19 +426,17 @@ public final class Pass2 {
 			somePublicationExistingNameDifferentRemoveIndex = removeExisting(suggestion.getSomePublicationExistingNameDifferent(), biotools, toolTitleOthers, suggestionProcessed);
 		}
 
-		boolean foundDiff = false;
-
 		if (suggestion.getPublicationAndNameExisting() != null) {
 			for (int i = 0; i < suggestion.getPublicationAndNameExisting().size(); ++i) {
 				if (publicationAndNameExistingRemoveIndex.contains(i)) {
 					continue;
 				}
-				if (suggestion.include()) {
+				if (suggestion.confident()) {
 					DiffGetter.addDiff(diffs, DiffGetter.makeDiff(scoreScore2, possiblyRelated, biotools, suggestion.getPublicationAndNameExisting().get(i), result.getPubIds(), null, null, homepage, linkLinks, downloadLinks, documentationLinks, bestLicense, allLanguages, credits, db));
 				} else {
 					DiffGetter.addDiff(diffs, DiffGetter.makeDiff(scoreScore2, possiblyRelated, biotools, suggestion.getPublicationAndNameExisting().get(i), result.getPubIds(), null, null, null, null, null, null, bestAbstractLicense, abstractLanguagesUnique, credits, db));
 				}
-				foundDiff = true;
+				existing.add(suggestion.getPublicationAndNameExisting().get(i));
 			}
 		}
 		if (suggestion.getNameExistingSomePublicationDifferent() != null) {
@@ -340,12 +444,12 @@ public final class Pass2 {
 				if (nameExistingSomePublicationDifferentRemoveIndex.contains(i)) {
 					continue;
 				}
-				if (suggestion.include()) {
+				if (suggestion.confident()) {
 					DiffGetter.addDiff(diffs, DiffGetter.makeDiff(scoreScore2, possiblyRelated, biotools, suggestion.getNameExistingSomePublicationDifferent().get(i), result.getPubIds(), suggestion.getNameExistingSomePublicationDifferentPubIds().get(i), null, homepage, linkLinks, downloadLinks, documentationLinks, bestLicense, allLanguages, credits, db));
 				} else {
 					DiffGetter.addDiff(diffs, DiffGetter.makeDiff(scoreScore2, possiblyRelated, biotools, suggestion.getNameExistingSomePublicationDifferent().get(i), result.getPubIds(), suggestion.getNameExistingSomePublicationDifferentPubIds().get(i), null, null, null, null, null, bestAbstractLicense, abstractLanguagesUnique, credits, db));
 				}
-				foundDiff = true;
+				existing.add(suggestion.getNameExistingSomePublicationDifferent().get(i));
 			}
 		}
 		if (suggestion.getSomePublicationExistingNameDifferent() != null) {
@@ -353,16 +457,25 @@ public final class Pass2 {
 				if (somePublicationExistingNameDifferentRemoveIndex.contains(i)) {
 					continue;
 				}
-				if (suggestion.include()) {
+				if (suggestion.confident()) {
 					DiffGetter.addDiff(diffs, DiffGetter.makeDiff(scoreScore2, possiblyRelated, biotools, suggestion.getSomePublicationExistingNameDifferent().get(i), result.getPubIds(), suggestion.getSomePublicationExistingNameDifferentPubIds().get(i), name, homepage, linkLinks, downloadLinks, documentationLinks, bestLicense, allLanguages, credits, db));
 				} else {
 					DiffGetter.addDiff(diffs, DiffGetter.makeDiff(scoreScore2, possiblyRelated, biotools, suggestion.getSomePublicationExistingNameDifferent().get(i), result.getPubIds(), suggestion.getSomePublicationExistingNameDifferentPubIds().get(i), null, null, null, null, null, bestAbstractLicense, abstractLanguagesUnique, credits, db));
 				}
-				foundDiff = true;
+				existing.add(suggestion.getSomePublicationExistingNameDifferent().get(i));
 			}
 		}
 
-		if (!foundDiff && suggestion.include()) {
+		for (Integer i : nameExistingPublicationDifferentAddToDiff) {
+			DiffGetter.addDiff(diffs, DiffGetter.makeDiff(scoreScore2, possiblyRelated, biotools, suggestion.getNameExistingPublicationDifferent().get(i), result.getPubIds(), suggestion.getNameExistingPublicationDifferentPubIds().get(i), null, homepage, linkLinks, downloadLinks, documentationLinks, bestLicense, allLanguages, credits, db));
+			existing.add(suggestion.getNameExistingPublicationDifferent().get(i));
+		}
+		for (Integer i : nameMatchAddToDiff) {
+			DiffGetter.addDiff(diffs, DiffGetter.makeDiff(scoreScore2, possiblyRelated, biotools, result.getNameMatch().get(i), null, result.getPubIds(), name, homepage, linkLinks, downloadLinks, documentationLinks, bestLicense, allLanguages, credits, db));
+			existing.add(result.getNameMatch().get(i));
+		}
+
+		if (existing.isEmpty() && include) {
 			Tool tool = new Tool();
 
 			tool.setName(name);
@@ -439,11 +552,45 @@ public final class Pass2 {
 
 			tools.add(tool);
 		}
+
+		return existing;
+	}
+
+	private static int includeConditions(boolean homepageMissing, Provenance bestLicense, List<Provenance> allLanguages, List<PubIds> pubIds) {
+		int conditions = 0;
+		if (!homepageMissing) {
+			++conditions;
+		}
+		if (bestLicense != null) {
+			++conditions;
+		}
+		if (allLanguages != null && !allLanguages.isEmpty()) {
+			++conditions;
+		}
+		if (pubIds != null && !pubIds.isEmpty()) {
+			boolean pubIdsCondition = true;
+			for (PubIds p : pubIds) {
+				if ((p.getPmid() != null && !p.getPmid().isEmpty()) || (p.getPmcid() != null && !p.getPmcid().isEmpty()) || (p.getDoi() == null || p.getDoi().isEmpty())) {
+					pubIdsCondition = false;
+				}
+			}
+			if (pubIdsCondition) {
+				++conditions;
+			}
+		}
+		return conditions;
+	}
+
+	private static Pattern notPattern(String notString) {
+		notString = notString.replace(".", "\\.");
+		Pattern notPattern = Pattern.compile("(?i)([^\\p{L}\\p{N}]|^)"
+			+ Arrays.asList(notString.split(" ")).stream().filter(s -> !s.isEmpty()).collect(Collectors.joining("[^\\p{L}\\p{N}]+")) + "([^\\p{L}\\p{N}]|$)");
+		return notPattern;
 	}
 
 	private static void writeResult(Result2 result, Database db, Writer resultsWriter,
 			List<ToolInput> biotools, List<License> licenses, List<Language> languages, List<String> languageKeywords, Scrape scrape, PreProcessor preProcessor,
-			List<Diff> diffs, List<Tool> tools) throws IOException {
+			List<Diff> diffs, List<Tool> tools, List<Pattern> notAbstract, List<Pattern> notTitle) throws IOException {
 
 		final String name;
 		if (!result.getSuggestions().isEmpty()) {
@@ -459,6 +606,350 @@ public final class Pass2 {
 			suggestion = null;
 		}
 
+		final String homepage;
+		boolean homepageBroken = false;
+		boolean homepageMissing = true;
+		if (suggestion != null) {
+			homepageBroken = suggestion.isHomepageBroken();
+			homepageMissing = suggestion.isHomepageMissing();
+			if (!homepageBroken && !homepageMissing) {
+				homepage = suggestion.getHomepage();
+			} else {
+				homepage = "";
+			}
+		} else {
+			homepage = "";
+		}
+
+		Set<BiotoolsLink<LinkType>> linkLinks = new LinkedHashSet<>();
+		if (suggestion != null) {
+			linkLinks = suggestion.getLinkLinks();
+		}
+
+		Set<BiotoolsLink<DownloadType>> downloadLinks = new LinkedHashSet<>();
+		if (suggestion != null) {
+			downloadLinks = suggestion.getDownloadLinks();
+		}
+
+		Set<BiotoolsLink<DocumentationType>> documentationLinks = new LinkedHashSet<>();
+		if (suggestion != null) {
+			documentationLinks = suggestion.getDocumentationLinks();
+		}
+
+		List<Provenance> webpageLicenses = new ArrayList<>();
+
+		String homepageLicense = null;
+		if (!homepage.isEmpty()) {
+			if (db.getWebpage(homepage, false) != null) {
+				homepageLicense = db.getWebpage(homepage, false).getLicense();
+			} else if (db.getDoc(homepage, false) != null) {
+				homepageLicense = db.getDoc(homepage, false).getLicense();
+			}
+			if (homepageLicense != null && !homepageLicense.isEmpty()) {
+				webpageLicenses.add(new Provenance(homepageLicense, homepage));
+			}
+		}
+
+		List<Provenance> linkLicenses = linkLinks.stream().map(l -> db.getWebpage(l.getUrl(), true) != null ? new Provenance(db.getWebpage(l.getUrl(), true).getLicense(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
+		webpageLicenses.addAll(linkLicenses.stream().filter(p -> !p.isEmpty()).collect(Collectors.toList()));
+
+		List<Provenance> downloadLicenses = downloadLinks.stream().map(l -> db.getWebpage(l.getUrl(), true) != null ? new Provenance(db.getWebpage(l.getUrl(), true).getLicense(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
+		webpageLicenses.addAll(downloadLicenses.stream().filter(p -> !p.isEmpty()).collect(Collectors.toList()));
+
+		List<Provenance> documentationLicenses = documentationLinks.stream().map(l -> db.getDoc(l.getUrl(), true) != null ? new Provenance(db.getDoc(l.getUrl(), true).getLicense(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
+		webpageLicenses.addAll(documentationLicenses.stream().filter(p -> !p.isEmpty()).collect(Collectors.toList()));
+
+		List<List<Provenance>> abstractLicenses = new ArrayList<>();
+		for (int i = 0; i < result.getPubIds().size(); ++i) {
+			List<String> abstractSentences = result.getAbstractSentences().get(i);
+			String provenance = result.getPubIds().get(i).toString();
+			abstractLicenses.add(abstractSentences.stream()
+				.map(s -> new LicenseSearch(s).bestMatch(licenses, false))
+				.filter(l -> l != null)
+				.map(l -> new Provenance(l.getOriginal(), provenance))
+				.collect(Collectors.toList()));
+		}
+
+		List<Provenance> allLicenses = new ArrayList<>();
+		for (Provenance webpageLicense : webpageLicenses) {
+			License l = new LicenseSearch(webpageLicense.getObject()).bestMatch(licenses, true);
+			if (l != null) {
+				allLicenses.add(new Provenance(l.getOriginal(), webpageLicense.getProvenances()));
+			}
+		}
+		for (List<Provenance> abstractLicense : abstractLicenses) {
+			allLicenses.addAll(abstractLicense);
+		}
+
+		Map<String, Integer> abstractLicenseCount = new HashMap<>();
+		Map<String, Provenance> abstractLicenseProvenances = new HashMap<>();
+		Provenance bestAbstractLicense = null;
+		int bestAbstractCount = 0;
+		for (List<Provenance> ls : abstractLicenses) {
+			for (Provenance l : ls) {
+				int count = 0;
+				if (abstractLicenseCount.get(l.getObject()) != null) {
+					count = abstractLicenseCount.get(l.getObject());
+				}
+				++count;
+				abstractLicenseCount.put(l.getObject(), count);
+				Provenance provenance;
+				if (abstractLicenseProvenances.get(l.getObject()) != null) {
+					provenance = abstractLicenseProvenances.get(l.getObject());
+					provenance.addProvenances(l.getProvenances());
+				} else {
+					provenance = l;
+					abstractLicenseProvenances.put(l.getObject(), provenance);
+				}
+				if (count > bestAbstractCount) {
+					bestAbstractLicense = provenance;
+					bestAbstractCount = count;
+				}
+			}
+		}
+
+		Map<String, Integer> licenseCount = new HashMap<>();
+		Map<String, Provenance> licenseProvenances = new HashMap<>();
+		Provenance bestLicense = null;
+		int bestCount = 0;
+		for (Provenance l : allLicenses) {
+			int count = 0;
+			if (licenseCount.get(l.getObject()) != null) {
+				count = licenseCount.get(l.getObject());
+			}
+			++count;
+			licenseCount.put(l.getObject(), count);
+			Provenance provenance;
+			if (licenseProvenances.get(l.getObject()) != null) {
+				provenance = licenseProvenances.get(l.getObject());
+				provenance.addProvenances(l.getProvenances());
+			} else {
+				provenance = l;
+				licenseProvenances.put(l.getObject(), provenance);
+			}
+			if (count > bestCount) {
+				bestLicense = provenance;
+				bestCount = count;
+			}
+		}
+
+		List<Provenance> webpageLanguages = new ArrayList<>();
+
+		String homepageLanguage = null;
+		if (!homepage.isEmpty()) {
+			if (db.getWebpage(homepage, false) != null) {
+				homepageLanguage = db.getWebpage(homepage, false).getLanguage();
+			} else if (db.getDoc(homepage, false) != null) {
+				homepageLanguage = db.getDoc(homepage, false).getLanguage();
+			}
+			if (homepageLanguage != null && !homepageLanguage.isEmpty()) {
+				webpageLanguages.add(new Provenance(homepageLanguage, homepage));
+			}
+		}
+
+		List<Provenance> linkLanguages = linkLinks.stream().map(l -> db.getWebpage(l.getUrl(), true) != null ? new Provenance(db.getWebpage(l.getUrl(), true).getLanguage(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
+		webpageLanguages.addAll(linkLanguages.stream().filter(p -> !p.isEmpty()).collect(Collectors.toList()));
+
+		List<Provenance> downloadLanguages = downloadLinks.stream().map(l -> db.getWebpage(l.getUrl(), true) != null ? new Provenance(db.getWebpage(l.getUrl(), true).getLanguage(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
+		webpageLanguages.addAll(downloadLanguages.stream().filter(p -> !p.isEmpty()).collect(Collectors.toList()));
+
+		List<Provenance> documentationLanguages = documentationLinks.stream().map(l -> db.getDoc(l.getUrl(), true) != null ? new Provenance(db.getDoc(l.getUrl(), true).getLanguage(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
+		webpageLanguages.addAll(documentationLanguages.stream().filter(p -> !p.isEmpty()).collect(Collectors.toList()));
+
+		List<List<Provenance>> abstractLanguages = new ArrayList<>();
+		for (int i = 0; i < result.getPubIds().size(); ++i) {
+			List<String> abstractSentences = result.getAbstractSentences().get(i);
+			String provenance = result.getPubIds().get(i).toString();
+			abstractLanguages.add(abstractSentences.stream()
+				.map(s -> new LanguageSearch(s).getMatches(languages, false, languageKeywords))
+				.flatMap(l -> l.stream().map(s -> new Provenance(s, provenance)))
+				.collect(Collectors.toList()));
+		}
+		List<Provenance> abstractLanguagesUnique = new ArrayList<>();
+		for (List<Provenance> ls : abstractLanguages) {
+			for (Provenance l : ls) {
+				boolean found = false;
+				for (Provenance unique : abstractLanguagesUnique) {
+					if (l.getObject().equals(unique.getObject())) {
+						unique.addProvenances(l.getProvenances());
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					abstractLanguagesUnique.add(l);
+				}
+			}
+		}
+
+		webpageLanguages = webpageLanguages.stream()
+			.flatMap(s -> new LanguageSearch(s.getObject()).getMatches(languages, true, languageKeywords).stream().map(l -> new Provenance(l, s.getProvenances())))
+			.collect(Collectors.toList());
+		List<Provenance> allLanguages = new ArrayList<>();
+		for (Provenance l : webpageLanguages) {
+			boolean found = false;
+			for (Provenance all : allLanguages) {
+				if (l.getObject().equals(all.getObject())) {
+					all.addProvenances(l.getProvenances());
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				allLanguages.add(l);
+			}
+		}
+		for (List<Provenance> ls : abstractLanguages) {
+			for (Provenance l : ls) {
+				boolean found = false;
+				for (Provenance all : allLanguages) {
+					if (l.getObject().equals(all.getObject())) {
+						all.addProvenances(l.getProvenances());
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					allLanguages.add(l);
+				}
+			}
+		}
+
+		List<CorrespAuthor> credits = new ArrayList<>();
+		for (List<CorrespAuthor> correspAuthor : result.getCorrespAuthor()) {
+			for (CorrespAuthor ca : correspAuthor) {
+				boolean exist = false;
+				for (CorrespAuthor credit : credits) {
+					if (Common.creditNameEqual(ca.getName(), credit.getName()) || Common.creditOrcidEqual(ca.getOrcid(), credit.getOrcid()) || Common.creditEmailEqual(ca.getEmail(), credit.getEmail())) {
+						if (credit.getName().isEmpty()) {
+							credit.setName(ca.getName());
+						}
+						if (credit.getOrcid().isEmpty()) {
+							credit.setOrcid(ca.getOrcid());
+						}
+						if (credit.getEmail().isEmpty()) {
+							credit.setEmail(ca.getEmail());
+						}
+						if (credit.getUri().isEmpty()) {
+							credit.setUri(ca.getUri());
+						}
+						exist = true;
+						break;
+					}
+				}
+				if (!exist) {
+					CorrespAuthor credit = new CorrespAuthor();
+					credit.setName(ca.getName());
+					credit.setOrcid(ca.getOrcid());
+					credit.setEmail(ca.getEmail());
+					credit.setUri(ca.getUri());
+					credits.add(credit);
+				}
+			}
+		}
+
+		boolean include = false;
+		if (suggestion != null) {
+			Confidence confidence = suggestion.confidence();
+			switch (confidence) {
+			case high:
+				include = true;
+				break;
+			case medium:
+				if (suggestion.getScore() >= 24) {
+					include = true;
+				} else if (suggestion.getScore() > 12) {
+					if (includeConditions(homepageMissing, bestLicense, allLanguages, null) >= 1) {
+						include = true;
+					}
+				} else {
+					if (includeConditions(homepageMissing, bestLicense, allLanguages, result.getPubIds()) >= 2) {
+						include = true;
+					}
+				}
+				break;
+			case low:
+				if (suggestion.getScore() >= 144) {
+					include = true;
+				} else if (suggestion.getScore() > 24) {
+					if (includeConditions(homepageMissing, bestLicense, allLanguages, null) >= 1) {
+						include = true;
+					}
+				} else {
+					if (includeConditions(homepageMissing, bestLicense, allLanguages, result.getPubIds()) >= 2) {
+						include = true;
+					}
+				}
+				break;
+			case very_low:
+				if (suggestion.getScore() >= 288) {
+					include = true;
+				} else if (suggestion.getScore() >= 144) {
+					if (includeConditions(homepageMissing, bestLicense, allLanguages, null) >= 1) {
+						include = true;
+					}
+				} else {
+					if (includeConditions(homepageMissing, bestLicense, allLanguages, result.getPubIds()) >= 2) {
+						include = true;
+					}
+				}
+				break;
+			}
+		}
+
+		if (include) {
+			if (HOMEPAGE_EXCLUDE.matcher(suggestion.getHomepage()).find()) {
+				include = false;
+			}
+		}
+		if (include) {
+			for (String journalTitle : result.getJournalTitle()) {
+				if (JOURNAL_EXCLUDE.matcher(journalTitle).find()) {
+					include = false;
+					break;
+				}
+			}
+		}
+		if (include) {
+			for (Pattern not : notAbstract) {
+				for (List<String> abstractSentences : result.getAbstractSentences()) {
+					for (String abstractSentence : abstractSentences) {
+						if (not.matcher(abstractSentence).find()) {
+							include = false;
+							break;
+						}
+					}
+				}
+				if (!include) {
+					break;
+				}
+			}
+		}
+		if (include) {
+			for (Pattern not : notTitle) {
+				for (String title : result.getTitle()) {
+					if (not.matcher(title).find()) {
+						include = false;
+						break;
+					}
+				}
+				if (!include) {
+					break;
+				}
+			}
+		}
+
+		final String description = DescriptionGetter.get(suggestion, include, homepageBroken, homepageMissing, biotools, result, homepage, linkLinks, documentationLinks, downloadLinks, db, scrape, name, preProcessor);
+
+		List<Integer> existing = new ArrayList<>();
+		if (suggestion != null) {
+			existing = addDiffTool(suggestion, include, result, db, biotools, preProcessor, diffs, tools,
+					name, description, homepage, linkLinks, downloadLinks, documentationLinks,
+					bestLicense, bestAbstractLicense, allLanguages, abstractLanguagesUnique, credits);
+		}
+
+		// Start writing from here
+
 		writeField(resultsWriter, result.getPubIds().stream().map(p -> p.getPmid()).collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, result.getPubIds().stream().map(p -> p.getPmcid()).collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, result.getPubIds().stream().map(p -> p.getDoi()).collect(Collectors.joining(" | ")));
@@ -469,25 +960,13 @@ public final class Pass2 {
 		writeField(resultsWriter, suggestion != null && suggestion.getScore2() > -1 ? String.valueOf(suggestion.getScore2()) : null);
 		writeField(resultsWriter, suggestion != null && suggestion.getScore2() > -1 ? Arrays.toString(suggestion.getScore2Parts()) : null);
 
+		writeField(resultsWriter, suggestion != null ? suggestion.confidence().name() : null);
+		writeField(resultsWriter, String.valueOf(include));
+		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(q -> q.getBiotoolsID()).collect(Collectors.joining(" | ")));
+
 		writeField(resultsWriter, suggestion != null ? suggestion.getOriginal() : null);
 		writeField(resultsWriter, name);
 		writeField(resultsWriter, suggestion != null ? suggestion.getProcessed() : null);
-
-		List<Integer> existing = new ArrayList<>();
-		if (suggestion != null) {
-			if (suggestion.getPublicationAndNameExisting() != null) {
-				existing.addAll(suggestion.getPublicationAndNameExisting());
-			}
-			if (suggestion.getNameExistingSomePublicationDifferent() != null) {
-				existing.addAll(suggestion.getNameExistingSomePublicationDifferent());
-			}
-			if (suggestion.getSomePublicationExistingNameDifferent() != null) {
-				existing.addAll(suggestion.getSomePublicationExistingNameDifferent());
-			}
-			if (suggestion.getNameExistingPublicationDifferent() != null) {
-				existing.addAll(suggestion.getNameExistingPublicationDifferent());
-			}
-		}
 
 		List<String> publicationAndNameExisting = null;
 		if (suggestion != null && suggestion.getPublicationAndNameExisting() != null) {
@@ -560,49 +1039,18 @@ public final class Pass2 {
 
 		writeField(resultsWriter, result.getSuggestions().stream().map(s -> String.valueOf(s.isFromAbstractLink())).collect(Collectors.joining(" | ")));
 
-		final String homepage;
-		boolean homepageBroken = false;
-		boolean homepageMissing = true;
-		if (suggestion != null) {
-			homepageBroken = suggestion.isHomepageBroken();
-			homepageMissing = suggestion.isHomepageMissing();
-			if (!homepageBroken && !homepageMissing) {
-				homepage = suggestion.getHomepage();
-			} else {
-				homepage = "";
-			}
-			writeField(resultsWriter, suggestion.getHomepage() + (homepageBroken ? " (broken)" : "") + (homepageMissing ? " (missing)" : ""));
-		} else {
-			writeField(resultsWriter, null);
-			homepage = "";
-		}
+		writeField(resultsWriter, suggestion != null ? suggestion.getHomepage() : null);
+		writeField(resultsWriter, String.valueOf(homepageBroken));
+		writeField(resultsWriter, String.valueOf(homepageMissing));
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(q -> currentHomepage(q, db)).collect(Collectors.joining(" | ")));
 
-		Set<BiotoolsLink<LinkType>> linkLinks = new LinkedHashSet<>();
-		if (suggestion != null) {
-			linkLinks = suggestion.getLinkLinks();
-			writeField(resultsWriter, linkLinks.stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
-		} else {
-			writeField(resultsWriter, null);
-		}
+		writeField(resultsWriter, linkLinks.stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getLink() == null ? "" : t.getLink().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" ; ")))).collect(Collectors.joining(" | ")));
 
-		Set<BiotoolsLink<DownloadType>> downloadLinks = new LinkedHashSet<>();
-		if (suggestion != null) {
-			downloadLinks = suggestion.getDownloadLinks();
-			writeField(resultsWriter, downloadLinks.stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
-		} else {
-			writeField(resultsWriter, null);
-		}
+		writeField(resultsWriter, downloadLinks.stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getDownload() == null ? "" : t.getDownload().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" ; ")))).collect(Collectors.joining(" | ")));
 
-		Set<BiotoolsLink<DocumentationType>> documentationLinks = new LinkedHashSet<>();
-		if (suggestion != null) {
-			documentationLinks = suggestion.getDocumentationLinks();
-			writeField(resultsWriter, documentationLinks.stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
-		} else {
-			writeField(resultsWriter, null);
-		}
+		writeField(resultsWriter, documentationLinks.stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getDocumentation() == null ? "" : t.getDocumentation().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" ; ")))).collect(Collectors.joining(" | ")));
 
 		if (suggestion != null) {
@@ -681,213 +1129,22 @@ public final class Pass2 {
 			.mapToObj(i -> result.getToolTitlePruned().get(i).equals(result.getToolTitle().get(i)) ? "" : result.getToolTitlePruned().get(i)).collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, String.join(" | ", result.getToolTitleAcronym()));
 
-		final String description = DescriptionGetter.get(suggestion, homepageBroken, homepageMissing, biotools, result, homepage, linkLinks, documentationLinks, downloadLinks, db, scrape, name, preProcessor);
 		writeField(resultsWriter, description);
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(q -> q.getDescription().replaceAll("\n", "\\\\n").replaceAll("\r", "\\\\r").replaceAll("\t", "\\\\t")).collect(Collectors.joining(" | ")));
 
-		List<Provenance> webpageLicenses = new ArrayList<>();
-		if (!homepage.isEmpty()) {
-			String homepageLicense = null;
-			if (db.getWebpage(homepage, false) != null) {
-				homepageLicense = db.getWebpage(homepage, false).getLicense();
-			} else if (db.getDoc(homepage, false) != null) {
-				homepageLicense = db.getDoc(homepage, false).getLicense();
-			}
-			if (homepageLicense != null && !homepageLicense.isEmpty()) {
-				writeField(resultsWriter, homepageLicense);
-				webpageLicenses.add(new Provenance(homepageLicense, homepage));
-			} else {
-				writeField(resultsWriter, null);
-			}
-		} else {
-			writeField(resultsWriter, null);
-		}
-
-		List<Provenance> linkLicenses = linkLinks.stream().map(l -> db.getWebpage(l.getUrl(), true) != null ? new Provenance(db.getWebpage(l.getUrl(), true).getLicense(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
+		writeField(resultsWriter, homepageLicense);
 		writeField(resultsWriter, linkLicenses.stream().map(p -> p.toString()).collect(Collectors.joining(" | ")));
-		linkLicenses.removeIf(p -> p.isEmpty());
-		webpageLicenses.addAll(linkLicenses);
-
-		List<Provenance> downloadLicenses = downloadLinks.stream().map(l -> db.getWebpage(l.getUrl(), true) != null ? new Provenance(db.getWebpage(l.getUrl(), true).getLicense(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
 		writeField(resultsWriter, downloadLicenses.stream().map(p -> p.toString()).collect(Collectors.joining(" | ")));
-		downloadLicenses.removeIf(p -> p.isEmpty());
-		webpageLicenses.addAll(downloadLicenses);
-
-		List<Provenance> documentationLicenses = documentationLinks.stream().map(l -> db.getDoc(l.getUrl(), true) != null ? new Provenance(db.getDoc(l.getUrl(), true).getLicense(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
 		writeField(resultsWriter, documentationLicenses.stream().map(p -> p.toString()).collect(Collectors.joining(" | ")));
-		documentationLicenses.removeIf(p -> p.isEmpty());
-		webpageLicenses.addAll(documentationLicenses);
-
-		List<List<Provenance>> abstractLicenses = new ArrayList<>();
-		for (int i = 0; i < result.getPubIds().size(); ++i) {
-			List<String> abstractSentences = result.getAbstractSentences().get(i);
-			String provenance = result.getPubIds().get(i).toString();
-			abstractLicenses.add(abstractSentences.stream()
-				.map(s -> new LicenseSearch(s).bestMatch(licenses, false))
-				.filter(l -> l != null)
-				.map(l -> new Provenance(l.getOriginal(), provenance))
-				.collect(Collectors.toList()));
-		}
 		writeField(resultsWriter, abstractLicenses.stream().map(lp -> lp.stream().map(p -> p.toString()).collect(Collectors.joining(" ; "))).collect(Collectors.joining(" | ")));
-
-		List<Provenance> allLicenses = new ArrayList<>();
-		for (Provenance webpageLicense : webpageLicenses) {
-			License l = new LicenseSearch(webpageLicense.getObject()).bestMatch(licenses, true);
-			if (l != null) {
-				allLicenses.add(new Provenance(l.getOriginal(), webpageLicense.getProvenances()));
-			}
-		}
-		for (List<Provenance> abstractLicense : abstractLicenses) {
-			allLicenses.addAll(abstractLicense);
-		}
-
-		Map<String, Integer> abstractLicenseCount = new HashMap<>();
-		Map<String, Provenance> abstractLicenseProvenances = new HashMap<>();
-		Provenance bestAbstractLicense = null;
-		int bestAbstractCount = 0;
-		for (List<Provenance> ls : abstractLicenses) {
-			for (Provenance l : ls) {
-				int count = 0;
-				if (abstractLicenseCount.get(l.getObject()) != null) {
-					count = abstractLicenseCount.get(l.getObject());
-				}
-				++count;
-				abstractLicenseCount.put(l.getObject(), count);
-				Provenance provenance;
-				if (abstractLicenseProvenances.get(l.getObject()) != null) {
-					provenance = abstractLicenseProvenances.get(l.getObject());
-					provenance.addProvenances(l.getProvenances());
-				} else {
-					provenance = l;
-					abstractLicenseProvenances.put(l.getObject(), provenance);
-				}
-				if (count > bestAbstractCount) {
-					bestAbstractLicense = provenance;
-					bestAbstractCount = count;
-				}
-			}
-		}
-
-		Map<String, Integer> licenseCount = new HashMap<>();
-		Map<String, Provenance> licenseProvenances = new HashMap<>();
-		Provenance bestLicense = null;
-		int bestCount = 0;
-		for (Provenance l : allLicenses) {
-			int count = 0;
-			if (licenseCount.get(l.getObject()) != null) {
-				count = licenseCount.get(l.getObject());
-			}
-			++count;
-			licenseCount.put(l.getObject(), count);
-			Provenance provenance;
-			if (licenseProvenances.get(l.getObject()) != null) {
-				provenance = licenseProvenances.get(l.getObject());
-				provenance.addProvenances(l.getProvenances());
-			} else {
-				provenance = l;
-				licenseProvenances.put(l.getObject(), provenance);
-			}
-			if (count > bestCount) {
-				bestLicense = provenance;
-				bestCount = count;
-			}
-		}
-
 		writeField(resultsWriter, bestLicense != null ? bestLicense.toString() : null);
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getLicense() == null ? "" : t.getLicense())).collect(Collectors.joining(" | ")));
 
-		List<Provenance> webpageLanguages = new ArrayList<>();
-		if (!homepage.isEmpty()) {
-			String homepageLanguage = null;
-			if (db.getWebpage(homepage, false) != null) {
-				homepageLanguage = db.getWebpage(homepage, false).getLanguage();
-			} else if (db.getDoc(homepage, false) != null) {
-				homepageLanguage = db.getDoc(homepage, false).getLanguage();
-			}
-			if (homepageLanguage != null && !homepageLanguage.isEmpty()) {
-				writeField(resultsWriter, homepageLanguage);
-				webpageLanguages.add(new Provenance(homepageLanguage, homepage));
-			} else {
-				writeField(resultsWriter, null);
-			}
-		} else {
-			writeField(resultsWriter, null);
-		}
-
-		List<Provenance> linkLanguages = linkLinks.stream().map(l -> db.getWebpage(l.getUrl(), true) != null ? new Provenance(db.getWebpage(l.getUrl(), true).getLanguage(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
+		writeField(resultsWriter, homepageLanguage);
 		writeField(resultsWriter, linkLanguages.stream().map(p -> p.toString()).collect(Collectors.joining(" | ")));
-		linkLanguages.removeIf(p -> p.isEmpty());
-		webpageLanguages.addAll(linkLanguages);
-
-		List<Provenance> downloadLanguages = downloadLinks.stream().map(l -> db.getWebpage(l.getUrl(), true) != null ? new Provenance(db.getWebpage(l.getUrl(), true).getLanguage(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
 		writeField(resultsWriter, downloadLanguages.stream().map(p -> p.toString()).collect(Collectors.joining(" | ")));
-		downloadLanguages.removeIf(p -> p.isEmpty());
-		webpageLanguages.addAll(downloadLanguages);
-
-		List<Provenance> documentationLanguages = documentationLinks.stream().map(l -> db.getDoc(l.getUrl(), true) != null ? new Provenance(db.getDoc(l.getUrl(), true).getLanguage(), l.getUrl()) : new Provenance()).collect(Collectors.toList());
 		writeField(resultsWriter, documentationLanguages.stream().map(p -> p.toString()).collect(Collectors.joining(" | ")));
-		documentationLanguages.removeIf(p -> p.isEmpty());
-		webpageLanguages.addAll(documentationLanguages);
-
-		List<List<Provenance>> abstractLanguages = new ArrayList<>();
-		for (int i = 0; i < result.getPubIds().size(); ++i) {
-			List<String> abstractSentences = result.getAbstractSentences().get(i);
-			String provenance = result.getPubIds().get(i).toString();
-			abstractLanguages.add(abstractSentences.stream()
-				.map(s -> new LanguageSearch(s).getMatches(languages, false, languageKeywords))
-				.flatMap(l -> l.stream().map(s -> new Provenance(s, provenance)))
-				.collect(Collectors.toList()));
-		}
-		List<Provenance> abstractLanguagesUnique = new ArrayList<>();
-		for (List<Provenance> ls : abstractLanguages) {
-			for (Provenance l : ls) {
-				boolean found = false;
-				for (Provenance unique : abstractLanguagesUnique) {
-					if (l.getObject().equals(unique.getObject())) {
-						unique.addProvenances(l.getProvenances());
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					abstractLanguagesUnique.add(l);
-				}
-			}
-		}
 		writeField(resultsWriter, abstractLanguages.stream().map(lp -> lp.stream().map(p -> p.toString()).collect(Collectors.joining(" ; "))).collect(Collectors.joining(" | ")));
-
-		webpageLanguages = webpageLanguages.stream()
-			.flatMap(s -> new LanguageSearch(s.getObject()).getMatches(languages, true, languageKeywords).stream().map(l -> new Provenance(l, s.getProvenances())))
-			.collect(Collectors.toList());
-		List<Provenance> allLanguages = new ArrayList<>();
-		for (Provenance l : webpageLanguages) {
-			boolean found = false;
-			for (Provenance all : allLanguages) {
-				if (l.getObject().equals(all.getObject())) {
-					all.addProvenances(l.getProvenances());
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				allLanguages.add(l);
-			}
-		}
-		for (List<Provenance> ls : abstractLanguages) {
-			for (Provenance l : ls) {
-				boolean found = false;
-				for (Provenance all : allLanguages) {
-					if (l.getObject().equals(all.getObject())) {
-						all.addProvenances(l.getProvenances());
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					allLanguages.add(l);
-				}
-			}
-		}
 		writeField(resultsWriter, allLanguages.stream().map(p -> p.toString()).collect(Collectors.joining(" ; ")));
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getLanguage() == null ? "" : String.join(" ; ", t.getLanguage()))).collect(Collectors.joining(" | ")));
 
@@ -912,45 +1169,7 @@ public final class Pass2 {
 		writeField(resultsWriter, result.getCorrespAuthor().stream().map(p -> p.stream().map(ca -> ca.getUri()).collect(Collectors.joining(" ; "))).collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getCredit() == null ? "" : t.getCredit().stream().map(c -> (c.getUrl() == null ? "" : c.getUrl())).collect(Collectors.joining(" ; ")))).collect(Collectors.joining(" | ")));
 
-		List<CorrespAuthor> credits = new ArrayList<>();
-		for (List<CorrespAuthor> correspAuthor : result.getCorrespAuthor()) {
-			for (CorrespAuthor ca : correspAuthor) {
-				boolean exist = false;
-				for (CorrespAuthor credit : credits) {
-					if (Common.creditNameEqual(ca.getName(), credit.getName()) || Common.creditOrcidEqual(ca.getOrcid(), credit.getOrcid()) || Common.creditEmailEqual(ca.getEmail(), credit.getEmail())) {
-						if (credit.getName().isEmpty()) {
-							credit.setName(ca.getName());
-						}
-						if (credit.getOrcid().isEmpty()) {
-							credit.setOrcid(ca.getOrcid());
-						}
-						if (credit.getEmail().isEmpty()) {
-							credit.setEmail(ca.getEmail());
-						}
-						if (credit.getUri().isEmpty()) {
-							credit.setUri(ca.getUri());
-						}
-						exist = true;
-						break;
-					}
-				}
-				if (!exist) {
-					CorrespAuthor credit = new CorrespAuthor();
-					credit.setName(ca.getName());
-					credit.setOrcid(ca.getOrcid());
-					credit.setEmail(ca.getEmail());
-					credit.setUri(ca.getUri());
-					credits.add(credit);
-				}
-			}
-		}
 		writeField(resultsWriter, credits.stream().map(ca -> ca.toString()).collect(Collectors.joining(" | ")), true);
-
-		if (suggestion != null) {
-			addDiffTool(suggestion, result, db, biotools, preProcessor, diffs, tools,
-					name, description, homepage, linkLinks, downloadLinks, documentationLinks,
-					bestLicense, bestAbstractLicense, allLanguages, abstractLanguagesUnique, credits);
-		}
 	}
 
 	static void run(Path outputPath, PreProcessor preProcessor, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException {
@@ -1008,11 +1227,11 @@ public final class Pass2 {
 				BufferedWriter newWriter = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(newPath), newEncoder))) {
 
 			resultsWriter.write("pmid\tpmcid\tdoi\tsame_suggestions"
-					+ "\tscore\tscore2\tscore2_parts\tsuggestion_original\tsuggestion\tsuggestion_processed"
+					+ "\tscore\tscore2\tscore2_parts\tconfidence\tinclude\texisting\tsuggestion_original\tsuggestion\tsuggestion_processed"
 					+ "\tpublication_and_name_existing\tname_existing_some_publication_different\tsome_publication_existing_name_different\tname_existing_publication_different"
 					+ "\tname_match\tlink_match\tname_word_match"
 					+ "\tlinks_abstract\tlinks_fulltext\tfrom_abstract_link"
-					+ "\thomepage\thomepage_biotools\tlink\tlink_biotools\tdownload\tdownload_biotools\tdocumentation\tdocumentation_biotools\tbroken_links"
+					+ "\thomepage\thomepage_broken\thomepage_missing\thomepage_biotools\tlink\tlink_biotools\tdownload\tdownload_biotools\tdocumentation\tdocumentation_biotools\tbroken_links"
 					+ "\tother_scores\tother_scores2\tother_scores2_parts\tother_suggestions_original\tother_suggestions\tother_suggestions_processed"
 					+ "\tother_publication_and_name_existing\tother_name_existing_some_publication_different\tother_some_publication_existing_name_different\tother_name_existing_publication_different"
 					+ "\tother_links_abstract\tother_links_fulltext"
@@ -1226,7 +1445,7 @@ public final class Pass2 {
 				}
 				Result2 resultI = results.get(i);
 				if (!resultI.getSuggestions().isEmpty()) {
-					if (!resultI.getSuggestions().get(0).include()) {
+					if (!resultI.getSuggestions().get(0).confident()) {
 						break;
 					}
 					for (int j = i + 1; j < results.size(); ++j) {
@@ -1235,7 +1454,7 @@ public final class Pass2 {
 						}
 						Result2 resultJ = results.get(j);
 						if (!resultJ.getSuggestions().isEmpty()) {
-							if (!resultJ.getSuggestions().get(0).include()) {
+							if (!resultJ.getSuggestions().get(0).confident()) {
 								break;
 							}
 							if (resultI.getSuggestions().get(0).getExtracted().equals(resultJ.getSuggestions().get(0).getExtracted())) {
@@ -1509,7 +1728,7 @@ public final class Pass2 {
 					if (homepage == null) {
 						for (String link : suggestion.getLinksAbstract()) {
 							link = Common.prependHttp(link);
-							if (!Common.DOWNLOAD_EXT.matcher(link).find() && Common.BIOTOOLS_SCHEMA_URL_PATTERN.matcher(link).matches()) {
+							if (!Common.DOWNLOAD_EXT.matcher(link).find() && Common.BIOTOOLS_SCHEMA_URLFTP_PATTERN.matcher(link).matches()) {
 								homepage = link;
 								suggestion.setHomepageBroken(true);
 								break;
@@ -1519,7 +1738,7 @@ public final class Pass2 {
 					if (homepage == null) {
 						for (String link : suggestion.getLinksFulltext()) {
 							link = Common.prependHttp(link);
-							if (!Common.DOWNLOAD_EXT.matcher(link).find() && Common.BIOTOOLS_SCHEMA_URL_PATTERN.matcher(link).matches()) {
+							if (!Common.DOWNLOAD_EXT.matcher(link).find() && Common.BIOTOOLS_SCHEMA_URLFTP_PATTERN.matcher(link).matches()) {
 								homepage = link;
 								suggestion.setHomepageBroken(true);
 								break;
@@ -1555,6 +1774,8 @@ public final class Pass2 {
 
 			List<Diff> diffs = new ArrayList<>();
 			List<Tool> tools = new ArrayList<>();
+			List<Pattern> notAbstract = PubFetcher.getResource(SelectPub.class, "select/not_abstract.txt").stream().map(s -> notPattern(s)).collect(Collectors.toList());
+			List<Pattern> notTitle = PubFetcher.getResource(SelectPub.class, "select/not_title.txt").stream().map(s -> notPattern(s)).collect(Collectors.toList());
 
 			logger.info(mainMarker, "{}Writing {} pass2 results to {}", logPrefix, results.size(), resultsPath.toString());
 			resultIndex = 0;
@@ -1562,7 +1783,7 @@ public final class Pass2 {
 			for (Result2 result : results) {
 				++resultIndex;
 				System.err.print(PubFetcher.progress(resultIndex, results.size(), start) + "  \r");
-				writeResult(result, db, resultsWriter, biotools, licenses, languages, languageKeywords, scrape, preProcessor, diffs, tools);
+				writeResult(result, db, resultsWriter, biotools, licenses, languages, languageKeywords, scrape, preProcessor, diffs, tools, notAbstract, notTitle);
 			}
 
 			logger.info(mainMarker, "{}Writing {} bio.tools diffs to {}", logPrefix, diffs.size(), diffPath.toString());

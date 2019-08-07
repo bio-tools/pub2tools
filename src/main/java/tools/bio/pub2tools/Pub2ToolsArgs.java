@@ -93,6 +93,12 @@ public class Pub2ToolsArgs extends BasicArgs {
 	@Parameter(names = { "--to", "--to-date" }, description = "TODO")
 	String to = null;
 
+	@Parameter(names = { "--month" }, description = "TODO")
+	String month = null;
+
+	@Parameter(names = { "--day" }, description = "TODO")
+	String day = null;
+
 	@Parameter(names = { "--pub", "--pub-ids", "--pub-file" }, description = "TODO")
 	String pub = null;
 

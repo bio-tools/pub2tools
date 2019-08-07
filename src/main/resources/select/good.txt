@@ -34,7 +34,6 @@ academic use
 chip-seq datasets
 user-provided
 available under
-freely available
 annotation information
 javascript
 scoring matrices

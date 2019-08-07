@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -48,7 +49,7 @@ public class SelectPub {
 
 	private static final Logger logger = LogManager.getLogger();
 
-	private static Map<String, String> getQuery(String resultType, String cursorMark, String search, String source, String date, FetcherArgs fetcherArgs) throws URISyntaxException {
+	private static Map<String, String> getQuery(String resultType, String cursorMark, String search, String source, String date, String not, FetcherArgs fetcherArgs) throws URISyntaxException {
 		Map<String, String> query = new LinkedHashMap<>();
 		query.put("resultType", resultType);
 		query.put("cursorMark", cursorMark);
@@ -60,14 +61,14 @@ public class SelectPub {
 			query.put("email", email);
 		}
 		if (source != null) {
-			query.put("query", search + " AND " + source + " AND " + date);
+			query.put("query", search + " AND " + source + " AND " + date + " AND " + not);
 		} else {
-			query.put("query", search + " AND " + date);
+			query.put("query", search + " AND " + date + " AND " + not);
 		}
 		return query;
 	}
 
-	private static List<PublicationIds> getIds(String type, String resultType, String search, String source, String date, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
+	private static List<PublicationIds> getIds(String type, String resultType, String search, String source, String date, String not, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
 		Marker mainMarker = MarkerManager.getMarker(Pub2Tools.MAIN_MARKER);
 
 		List<PublicationIds> ids = new ArrayList<>();
@@ -80,7 +81,7 @@ public class SelectPub {
 		long start = System.currentTimeMillis();
 
 		Fetcher fetcher = new Fetcher(fetcherArgs.getPrivateArgs());
-		Map<String, String> query = getQuery(resultType, cursorMark, search, source, date, fetcherArgs);
+		Map<String, String> query = getQuery(resultType, cursorMark, search, source, date, not, fetcherArgs);
 		Document doc = fetcher.postDoc("https://www.ebi.ac.uk/europepmc/webservices/rest/searchPOST", query, fetcherArgs);
 		if (doc == null) {
 			throw new RuntimeException("No Document returned for query " + query);
@@ -125,7 +126,7 @@ public class SelectPub {
 					++pageIndex;
 					System.err.print(PubFetcher.progress(pageIndex, (expectedSize - 1) / 1000 + 1, start) + "  \r");
 
-					query = getQuery(resultType, cursorMark, search, source, date, fetcherArgs);
+					query = getQuery(resultType, cursorMark, search, source, date, not, fetcherArgs);
 					doc = fetcher.postDoc("https://www.ebi.ac.uk/europepmc/webservices/rest/searchPOST", query, fetcherArgs);
 				}
 			} else {
@@ -191,13 +192,14 @@ public class SelectPub {
 		}
 	}
 
-	private static Set<PublicationIds> abstractQuery(String resultType, String source, String date, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
+	private static Set<PublicationIds> abstractQuery(String resultType, String source, String date, String not, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
 		Marker mainMarker = MarkerManager.getMarker(Pub2Tools.MAIN_MARKER);
 		logger.info(mainMarker, "{}Running abstract query for source {} and date {}", logPrefix, source, date);
 
 		String excellent = getAbstractQuery("excellent");
 		String good = getAbstractQuery("good");
-		String mediocre = getAbstractQuery("mediocre");
+		String mediocre1 = getAbstractQuery("mediocre1");
+		String mediocre2 = getAbstractQuery("mediocre2");
 		String http = getAbstractQuery("http");
 		String toolGood = getAbstractQueryPlural("tool_good");
 		String tool = getAbstractQueryPlural("tool");
@@ -205,25 +207,29 @@ public class SelectPub {
 		List<String> toolsGood = PubFetcher.getResource(SelectPub.class, "select/tool_good.txt");
 		List<String> tools = PubFetcher.getResource(SelectPub.class, "select/tool.txt");
 
-		List<PublicationIds> excellentIds = getIds("excellent", resultType, excellent, source, date, fetcherArgs, logPrefix);
-		List<PublicationIds> goodHttpIds = getIds("good + http", resultType, good + " AND " + http, source, date, fetcherArgs, logPrefix);
-		List<PublicationIds> goodToolGoodIds = getIds("good + tool_good", resultType, good + " AND " + toolGood, source, date, fetcherArgs, logPrefix);
-		List<PublicationIds> mediocreHttpToolIds = getIds("mediocre + http + tool", resultType, mediocre + " AND " + http + " AND " + tool, source, date, fetcherArgs, logPrefix);
-		List<PublicationIds> mediocreToolGoodToolIds = getIds("mediocre + tool_good + tool", resultType, mediocre + " AND " + toolGood + " AND " + tool, source, date, fetcherArgs, logPrefix);
-		List<PublicationIds> httpToolGoodIds = getIds("http + tool_good", resultType, http + " AND " + toolGood, source, date, fetcherArgs, logPrefix);
+		List<PublicationIds> excellentIds = getIds("excellent", resultType, excellent, source, date, not, fetcherArgs, logPrefix);
+		List<PublicationIds> goodHttpIds = getIds("good + http", resultType, good + " AND " + http, source, date, not, fetcherArgs, logPrefix);
+		List<PublicationIds> goodToolGoodIds = getIds("good + tool_good", resultType, good + " AND " + toolGood, source, date, not, fetcherArgs, logPrefix);
+		List<PublicationIds> mediocre1HttpToolIds = getIds("mediocre1 + http + tool", resultType, mediocre1 + " AND " + http + " AND " + tool, source, date, not, fetcherArgs, logPrefix);
+		List<PublicationIds> mediocre2HttpToolIds = getIds("mediocre2 + http + tool", resultType, mediocre2 + " AND " + http + " AND " + tool, source, date, not, fetcherArgs, logPrefix);
+		List<PublicationIds> mediocre1ToolGoodToolIds = getIds("mediocre1 + tool_good + tool", resultType, mediocre1 + " AND " + toolGood + " AND " + tool, source, date, not, fetcherArgs, logPrefix);
+		List<PublicationIds> mediocre2ToolGoodToolIds = getIds("mediocre2 + tool_good + tool", resultType, mediocre2 + " AND " + toolGood + " AND " + tool, source, date, not, fetcherArgs, logPrefix);
+		List<PublicationIds> httpToolGoodIds = getIds("http + tool_good", resultType, http + " AND " + toolGood, source, date, not, fetcherArgs, logPrefix);
 
 		List<List<PublicationIds>> toolGoodIds = new ArrayList<>();
 		for (String t : toolsGood) {
-			toolGoodIds.add(getIds("\"" + t + "\"", resultType, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", source, date, fetcherArgs, logPrefix));
+			toolGoodIds.add(getIds("\"" + t + "\"", resultType, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", source, date, not, fetcherArgs, logPrefix));
 		}
 		List<List<PublicationIds>> toolIds = new ArrayList<>();
 		for (String t : tools) {
-			toolIds.add(getIds("\"" + t + "\"", resultType, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", source, date, fetcherArgs, logPrefix));
+			toolIds.add(getIds("\"" + t + "\"", resultType, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", source, date, not, fetcherArgs, logPrefix));
 		}
 
-		List<PublicationIds> goodIds = getIds("good", resultType, good, source, date, fetcherArgs, logPrefix);
-		List<PublicationIds> mediocreIds = getIds("mediocre", resultType, mediocre, source, date, fetcherArgs, logPrefix);
-		List<PublicationIds> httpIds = getIds("http", resultType, http, source, date, fetcherArgs, logPrefix);
+		List<PublicationIds> goodIds = getIds("good", resultType, good, source, date, not, fetcherArgs, logPrefix);
+		Set<PublicationIds> mediocreIds = new LinkedHashSet<>();
+		mediocreIds.addAll(getIds("mediocre1", resultType, mediocre1, source, date, not, fetcherArgs, logPrefix));
+		mediocreIds.addAll(getIds("mediocre2", resultType, mediocre2, source, date, not, fetcherArgs, logPrefix));
+		List<PublicationIds> httpIds = getIds("http", resultType, http, source, date, not, fetcherArgs, logPrefix);
 
 		logger.info(mainMarker, "{}Getting results for good + tool + tool", logPrefix);
 		List<PublicationIds> goodToolToolIds = new ArrayList<>();
@@ -241,9 +247,9 @@ public class SelectPub {
 		logger.info(mainMarker, "{}Getting results for mediocre + tool + tool + tool", logPrefix);
 		List<PublicationIds> mediocreToolToolToolIds = new ArrayList<>();
 		start = System.currentTimeMillis();
-		for (int i = 0; i < mediocreIds.size(); ++i) {
-			System.err.print(PubFetcher.progress(i + 1, mediocreIds.size(), start) + "  \r");
-			PublicationIds mediocreId = mediocreIds.get(i);
+		int mediocreIdsI = 0;
+		for (PublicationIds mediocreId : mediocreIds) {
+			System.err.print(PubFetcher.progress(mediocreIdsI + 1, mediocreIds.size(), start) + "  \r");
 			int j = findId(0, 2, toolIds, mediocreId);
 			if (j >= 0) {
 				j = findId(j + 1, 1, toolIds, mediocreId);
@@ -251,6 +257,7 @@ public class SelectPub {
 					findIdLast(j + 1, toolIds, mediocreId, mediocreToolToolToolIds);
 				}
 			}
+			++mediocreIdsI;
 		}
 		logger.info(mainMarker, "{}Got {} results for mediocre + tool + tool + tool", logPrefix, mediocreToolToolToolIds.size());
 
@@ -309,8 +316,10 @@ public class SelectPub {
 		ids.addAll(excellentIds);
 		ids.addAll(goodHttpIds);
 		ids.addAll(goodToolGoodIds);
-		ids.addAll(mediocreHttpToolIds);
-		ids.addAll(mediocreToolGoodToolIds);
+		ids.addAll(mediocre1HttpToolIds);
+		ids.addAll(mediocre2HttpToolIds);
+		ids.addAll(mediocre1ToolGoodToolIds);
+		ids.addAll(mediocre2ToolGoodToolIds);
 		ids.addAll(httpToolGoodIds);
 		ids.addAll(goodToolToolIds);
 		ids.addAll(mediocreToolToolToolIds);
@@ -322,26 +331,53 @@ public class SelectPub {
 		return ids;
 	}
 
-	public static String getDate(String from, String to) {
-		LocalDate fromDate = LocalDate.parse(from, DateTimeFormatter.ISO_LOCAL_DATE);
-		LocalDate toDate = LocalDate.parse(to, DateTimeFormatter.ISO_LOCAL_DATE);
-		if (toDate.isBefore(fromDate)) {
-			throw new IllegalArgumentException("The date in --to cannot be earlier than the date in --from!");
+	public static String getDate(String from, String to, String month, String day, String reason) {
+		if (from != null && to == null) {
+			throw new IllegalArgumentException("If --from is specified, then --to must also be specified!");
 		}
-		return "CREATION_DATE:[" + fromDate.toString() + " TO " + toDate.toString() + "]";
+		if (from == null && to != null) {
+			throw new IllegalArgumentException("If --to is specified, then --from must also be specified!");
+		}
+		if ((from == null || to == null) && month == null && day == null) {
+			throw new IllegalArgumentException("Parameters --from/--to or --month or --day are required" + reason + "!");
+		}
+		if ((from != null && to != null) && (month != null || day != null)
+				|| (month != null && day != null)) {
+			throw new IllegalArgumentException("Specify only one of --from/--to or --month or --day" + reason + "!");
+		}
+		if (from != null && to != null) {
+			LocalDate fromDate = LocalDate.parse(from, DateTimeFormatter.ISO_LOCAL_DATE);
+			LocalDate toDate = LocalDate.parse(to, DateTimeFormatter.ISO_LOCAL_DATE);
+			if (toDate.isBefore(fromDate)) {
+				throw new IllegalArgumentException("The date in --to cannot be earlier than the date in --from!");
+			}
+			return "CREATION_DATE:[" + fromDate.toString() + " TO " + toDate.toString() + "]";
+		}
+		if (month != null) {
+			LocalDate monthBegin = LocalDate.parse(month + "-01", DateTimeFormatter.ISO_LOCAL_DATE);
+			LocalDate monthEnd = monthBegin.with(TemporalAdjusters.lastDayOfMonth());
+			return "CREATION_DATE:[" + monthBegin.toString() + " TO " + monthEnd.toString() + "]";
+		}
+		LocalDate dayDate = LocalDate.parse(day, DateTimeFormatter.ISO_LOCAL_DATE);
+		return "CREATION_DATE:" + dayDate.toString();
 	}
 
 	public static Set<PublicationIds> select(String date, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
 		Marker mainMarker = MarkerManager.getMarker(Pub2Tools.MAIN_MARKER);
 
+		List<String> notAbstract = PubFetcher.getResource(SelectPub.class, "select/not_abstract.txt");
+		List<String> notTitle = PubFetcher.getResource(SelectPub.class, "select/not_title.txt");
+		String not = "(NOT " + notAbstract.stream().map(n -> "ABSTRACT:\"" + n + "\"").collect(Collectors.joining(" NOT "));
+		not += " NOT " + notTitle.stream().map(n -> "TITLE:\"" + n + "\"").collect(Collectors.joining(" NOT ")) + ")";
+
 		logger.info(mainMarker, "{}Running journal list query for date {}", logPrefix, date);
 		List<String> journalList = PubFetcher.getResource(SelectPub.class, "select/journal.txt");
 		String journalSearch = "(" + journalList.stream().map(j -> "JOURNAL:\"" + j + "\"").collect(Collectors.joining(" OR ")) + ")";
-		List<PublicationIds> idsJournal = getIds("journal list", "idlist", journalSearch, null, date, fetcherArgs, logPrefix);
+		List<PublicationIds> idsJournal = getIds("journal list", "idlist", journalSearch, null, date, not, fetcherArgs, logPrefix);
 		logger.info(mainMarker, "{}Journal list query for date {} returned {} results", logPrefix, date, idsJournal.size());
 
-		Set<PublicationIds> idsMed = abstractQuery("idlist", "(SRC:MED OR SRC:PMC)", date, fetcherArgs, logPrefix);
-		Set<PublicationIds> idsPpr = abstractQuery("lite", "(SRC:PPR)", date, fetcherArgs, logPrefix);
+		Set<PublicationIds> idsMed = abstractQuery("idlist", "(SRC:MED OR SRC:PMC)", date, not, fetcherArgs, logPrefix);
+		Set<PublicationIds> idsPpr = abstractQuery("lite", "(SRC:PPR)", date, not, fetcherArgs, logPrefix);
 
 		Set<PublicationIds> ids = new LinkedHashSet<>();
 		ids.addAll(idsJournal);

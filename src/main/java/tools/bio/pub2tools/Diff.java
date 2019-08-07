@@ -20,6 +20,7 @@
 package tools.bio.pub2tools;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,7 +41,7 @@ public class Diff {
 
 	private Set<PubIds> modifyPublications = new LinkedHashSet<>();
 
-	private Set<PubIds> addPublications = null;
+	private Collection<PubIds> addPublications = null;
 
 	private String modifyName = null;
 
@@ -97,10 +98,10 @@ public class Diff {
 		modifyPublications.add(publication);
 	}
 
-	public Set<PubIds> getAddPublications() {
+	public Collection<PubIds> getAddPublications() {
 		return addPublications;
 	}
-	public void setAddPublications(Set<PubIds> addPublications) {
+	public void setAddPublications(Collection<PubIds> addPublications) {
 		this.addPublications = addPublications;
 	}
 
