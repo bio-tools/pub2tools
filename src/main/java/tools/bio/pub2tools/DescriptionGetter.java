@@ -39,7 +39,7 @@ import org.edamontology.pubfetcher.core.scrape.Scrape;
 import org.edamontology.edammap.core.input.json.DocumentationType;
 import org.edamontology.edammap.core.input.json.DownloadType;
 import org.edamontology.edammap.core.input.json.LinkType;
-import org.edamontology.edammap.core.input.json.ToolInput;
+import org.edamontology.edammap.core.input.json.Tool;
 import org.edamontology.edammap.core.preprocessing.PreProcessor;
 
 public final class DescriptionGetter {
@@ -274,7 +274,7 @@ public final class DescriptionGetter {
 		return descriptions.stream().map(d -> d.getDescription()).collect(Collectors.joining(" | "));
 	}
 
-	static String get(Suggestion2 suggestion, boolean include, boolean homepageBroken, boolean homepageMissing, List<ToolInput> biotools, Result2 result, String homepage, Set<BiotoolsLink<LinkType>> linkLinks, Set<BiotoolsLink<DocumentationType>> documentationLinks, Set<BiotoolsLink<DownloadType>> downloadLinks, Database db, Scrape scrape, String name, PreProcessor preProcessor) {
+	static String get(Suggestion2 suggestion, boolean include, boolean homepageBroken, boolean homepageMissing, List<Tool> biotools, Result2 result, String homepage, Set<BiotoolsLink<LinkType>> linkLinks, Set<BiotoolsLink<DocumentationType>> documentationLinks, Set<BiotoolsLink<DownloadType>> downloadLinks, Database db, Scrape scrape, String name, PreProcessor preProcessor) {
 		List<String> messages = new ArrayList<>();
 		if (suggestion == null || !include) {
 			messages.add("NOT INCLUDED!");

@@ -35,7 +35,7 @@ import org.edamontology.edammap.core.input.json.DocumentationType;
 import org.edamontology.edammap.core.input.json.DownloadType;
 import org.edamontology.edammap.core.input.json.Link;
 import org.edamontology.edammap.core.input.json.LinkType;
-import org.edamontology.edammap.core.input.json.ToolInput;
+import org.edamontology.edammap.core.input.json.Tool;
 
 public final class DiffGetter {
 
@@ -118,13 +118,13 @@ public final class DiffGetter {
 		}
 	}
 
-	static Diff makeDiff(double scoreScore2, Set<Integer> possiblyRelated, List<ToolInput> biotools, int existing, List<PubIds> publications, Collection<PubIds> addPublications, String modifyName, String homepage, Set<BiotoolsLink<LinkType>> links, Set<BiotoolsLink<DownloadType>> downloads, Set<BiotoolsLink<DocumentationType>> documentations, Provenance license, List<Provenance> languages, List<CorrespAuthor> credits, Database db) {
+	static Diff makeDiff(double scoreScore2, Set<Integer> possiblyRelated, List<Tool> biotools, int existing, List<PubIds> publications, Collection<PubIds> addPublications, String modifyName, String homepage, Set<BiotoolsLink<LinkType>> links, Set<BiotoolsLink<DownloadType>> downloads, Set<BiotoolsLink<DocumentationType>> documentations, Provenance license, List<Provenance> languages, List<CorrespAuthor> credits, Database db) {
 		Diff diff = new Diff();
 
 		diff.setScoreScore2(scoreScore2);
 		diff.setPossiblyRelated(possiblyRelated);
 
-		ToolInput biotool = biotools.get(existing);
+		Tool biotool = biotools.get(existing);
 
 		diff.setExisting(existing);
 		diff.setAddPublications(addPublications);

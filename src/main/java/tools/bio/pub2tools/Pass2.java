@@ -73,7 +73,6 @@ import org.edamontology.edammap.core.input.json.Link;
 import org.edamontology.edammap.core.input.json.LinkType;
 import org.edamontology.edammap.core.input.json.LinkVersion;
 import org.edamontology.edammap.core.input.json.Tool;
-import org.edamontology.edammap.core.input.json.ToolInput;
 import org.edamontology.edammap.core.preprocessing.PreProcessor;
 import org.edamontology.edammap.core.query.QueryType;
 
@@ -119,7 +118,7 @@ public final class Pass2 {
 	private static final Pattern TOOL_TITLE_NOT_ALPHANUM = Pattern.compile("[^\\p{L}\\p{N}]");
 
 	private static final Pattern HOMEPAGE_EXCLUDE = Pattern.compile("(?i)^(https?://)?(www\\.)?(clinicaltrials\\.gov|osf\\.io|annualreviews\\.org|w3\\.org|creativecommons\\.org)([^\\p{L}]|$)");
-	private static final Pattern JOURNAL_EXCLUDE = Pattern.compile("(?i)^(Systematic reviews|The Cochrane Database of Systematic Reviews)$");
+	private static final Pattern JOURNAL_EXCLUDE = Pattern.compile("(?i)^(Systematic reviews|The Cochrane Database of Systematic Reviews|Annual review of .*)$");
 
 	private static boolean isBroken(String url, Database db) {
 		if (db.getWebpage(url, false) != null && !db.getWebpage(url, false).isBroken()) {
@@ -131,7 +130,7 @@ public final class Pass2 {
 		return true;
 	}
 
-	private static boolean creditMatch(List<ToolInput> biotools, int i, List<CorrespAuthor> credits) {
+	private static boolean creditMatch(List<Tool> biotools, int i, List<CorrespAuthor> credits) {
 		List<Credit> creditsBiotools = biotools.get(i).getCredit();
 		if (creditsBiotools != null) {
 			for (Credit creditBiotools : creditsBiotools) {
@@ -284,11 +283,11 @@ public final class Pass2 {
 		return null;
 	}
 
-	private static List<Integer> removeExisting(List<Integer> existing, List<ToolInput> biotools, List<String> toolTitleOthers, String suggestionProcessed) {
+	private static List<Integer> removeExisting(List<Integer> existing, List<Tool> biotools, List<String> toolTitleOthers, String suggestionProcessed) {
 		List<Integer> removeIndex = new ArrayList<>();
 		if (existing != null) {
 			for (int i = 0; i < existing.size(); ++i) {
-				ToolInput biotool = biotools.get(existing.get(i));
+				Tool biotool = biotools.get(existing.get(i));
 				String idProcessed = String.join("", biotool.getBiotoolsID());
 				String nameProcessed = String.join("", biotool.getName());
 				for (String other : toolTitleOthers) {
@@ -301,7 +300,7 @@ public final class Pass2 {
 		return removeIndex;
 	}
 
-	private static String currentHomepage(ToolInput biotool, Database db) {
+	private static String currentHomepage(Tool biotool, Database db) {
 		String homepage = biotool.getHomepage();
 		if (biotool.getHomepage_status() != 0) {
 			homepage += " (homepage_status: " + biotool.getHomepage_status() + ")";
@@ -331,7 +330,7 @@ public final class Pass2 {
 		writeField(writer, value, false);
 	}
 
-	private static List<Integer> addDiffTool(Suggestion2 suggestion, boolean include, Result2 result, Database db, List<ToolInput> biotools, PreProcessor preProcessor, List<Diff> diffs, List<Tool> tools,
+	private static List<Integer> addDiffTool(Suggestion2 suggestion, boolean include, Result2 result, Database db, List<Tool> biotools, PreProcessor preProcessor, List<Diff> diffs, List<Tool> tools,
 			String name, String description, String homepage, Set<BiotoolsLink<LinkType>> linkLinks, Set<BiotoolsLink<DownloadType>> downloadLinks, Set<BiotoolsLink<DocumentationType>> documentationLinks,
 			Provenance bestLicense, Provenance bestAbstractLicense, List<Provenance> allLanguages, List<Provenance> abstractLanguagesUnique, List<CorrespAuthor> credits) {
 		double scoreScore2 = suggestion.getScore2() < 0 ? suggestion.getScore() + 10000 : suggestion.getScore2();
@@ -589,7 +588,7 @@ public final class Pass2 {
 	}
 
 	private static void writeResult(Result2 result, Database db, Writer resultsWriter,
-			List<ToolInput> biotools, List<License> licenses, List<Language> languages, List<String> languageKeywords, Scrape scrape, PreProcessor preProcessor,
+			List<Tool> biotools, List<License> licenses, List<Language> languages, List<String> languageKeywords, Scrape scrape, PreProcessor preProcessor,
 			List<Diff> diffs, List<Tool> tools, List<Pattern> notAbstract, List<Pattern> notTitle) throws IOException {
 
 		final String name;
@@ -1190,7 +1189,7 @@ public final class Pass2 {
 		String biotoolsFile = outputPath.resolve(Common.BIOTOOLS_FILE).toString();
 		logger.info(mainMarker, "{}Loading all bio.tools content from {}", logPrefix, biotoolsFile);
 		@SuppressWarnings("unchecked")
-		List<ToolInput> biotools = (List<ToolInput>) Json.load(biotoolsFile, QueryType.biotools, fetcherArgs.getTimeout(), fetcherArgs.getPrivateArgs().getUserAgent());
+		List<Tool> biotools = (List<Tool>) Json.load(biotoolsFile, QueryType.biotools, fetcherArgs.getTimeout(), fetcherArgs.getPrivateArgs().getUserAgent());
 
 		Path pass1Path = outputPath.resolve(Common.PASS1_FILE);
 		logger.info(mainMarker, "{}Loading pass1 results from {}", logPrefix, pass1Path.toString());
@@ -1534,7 +1533,7 @@ public final class Pass2 {
 			List<List<String>> queryNamesExtracted = new ArrayList<>();
 			List<String> queryNamesProcessed = new ArrayList<>();
 			List<List<String>> queryLinks = new ArrayList<>();
-			for (ToolInput biotool : biotools) {
+			for (Tool biotool : biotools) {
 				List<String> queryNameExtracted = preProcessor.extract(biotool.getName());
 				List<String> queryNameProcessed = preProcessor.process(biotool.getName(), queryNameExtracted);
 				queryNamesExtracted.add(Arrays.asList(Common.BIOTOOLS_EXTRACTED_VERSION_TRIM.matcher(String.join(" ", queryNameExtracted)).replaceFirst("").split(" ")));
@@ -1568,7 +1567,7 @@ public final class Pass2 {
 				List<Boolean> allMatches = new ArrayList<>();
 				List<Set<PubIds>> notMatches = new ArrayList<>();
 				for (int i = 0; i < biotools.size(); ++i) {
-					ToolInput biotool = biotools.get(i);
+					Tool biotool = biotools.get(i);
 					boolean oneMatch = false;
 					boolean allMatch = true;
 					Set<PubIds> notMatch = null;
@@ -1608,7 +1607,7 @@ public final class Pass2 {
 					List<Integer> nameExistingPublicationDifferent = null;
 					List<Set<PubIds>> nameExistingPublicationDifferentPubIds = null;
 					for (int j = 0; j < biotools.size(); ++j) {
-						ToolInput biotool = biotools.get(j);
+						Tool biotool = biotools.get(j);
 						if (suggestion.getExtracted().equals(biotool.getName())) {
 							if (allMatches.get(j)) {
 								if (publicationAndNameExisting == null) {
@@ -1791,7 +1790,7 @@ public final class Pass2 {
 				if (!diff.include()) {
 					continue;
 				}
-				ToolInput biotool = biotools.get(diff.getExisting());
+				Tool biotool = biotools.get(diff.getExisting());
 				writeField(diffWriter, biotool.getBiotoolsID());
 				writeField(diffWriter, String.valueOf(diff.getScoreScore2()));
 				String publicationBiotools = null;
@@ -1842,7 +1841,7 @@ public final class Pass2 {
 			}
 
 			logger.info(mainMarker, "{}Writing {} new bio.tools entries to {}", logPrefix, tools.size(), newPath.toString());
-			org.edamontology.edammap.core.output.Json.outputBiotools(newWriter, tools);
+			org.edamontology.edammap.core.output.Json.outputTrimmedBiotools(newWriter, null, tools);
 		}
 	}
 }
