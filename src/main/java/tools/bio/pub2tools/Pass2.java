@@ -239,28 +239,28 @@ public final class Pass2 {
 	}
 
 	private static String chooseHomepage(List<String> links, List<BiotoolsLink<LinkType>> linkLinks, List<BiotoolsLink<DocumentationType>> documentationLinks, Database db) {
-		for (Iterator<BiotoolsLink<LinkType>> it =  linkLinks.iterator(); it.hasNext(); ) {
+		for (Iterator<BiotoolsLink<LinkType>> it = linkLinks.iterator(); it.hasNext(); ) {
 			BiotoolsLink<LinkType> linkLink = it.next();
 			if (linkLink.getType() == LinkType.OTHER) {
 				it.remove();
 				return linkLink.getUrl();
 			}
 		}
-		for (Iterator<BiotoolsLink<LinkType>> it =  linkLinks.iterator(); it.hasNext(); ) {
+		for (Iterator<BiotoolsLink<LinkType>> it = linkLinks.iterator(); it.hasNext(); ) {
 			BiotoolsLink<LinkType> linkLink = it.next();
 			if (linkLink.getType() == LinkType.REPOSITORY) {
 				it.remove();
 				return linkLink.getUrl();
 			}
 		}
-		for (Iterator<BiotoolsLink<DocumentationType>> it =  documentationLinks.iterator(); it.hasNext(); ) {
+		for (Iterator<BiotoolsLink<DocumentationType>> it = documentationLinks.iterator(); it.hasNext(); ) {
 			BiotoolsLink<DocumentationType> documentationLink = it.next();
 			if (documentationLink.getType() == DocumentationType.GENERAL) {
 				it.remove();
 				return documentationLink.getUrl();
 			}
 		}
-		for (Iterator<BiotoolsLink<DocumentationType>> it =  documentationLinks.iterator(); it.hasNext(); ) {
+		for (Iterator<BiotoolsLink<DocumentationType>> it = documentationLinks.iterator(); it.hasNext(); ) {
 			BiotoolsLink<DocumentationType> documentationLink = it.next();
 			if ((documentationLink.getType() == DocumentationType.MANUAL
 					|| documentationLink.getType() == DocumentationType.INSTALLATION_INSTRUCTIONS
@@ -1180,6 +1180,9 @@ public final class Pass2 {
 		List<String> languageKeywords = PubFetcher.getResource(Pass2.class, "pass2/language_keywords.txt");
 		List<Language> languages = language.stream().map(l -> new Language(l)).collect(Collectors.toList());
 
+		List<Pattern> notAbstract = PubFetcher.getResource(SelectPub.class, "select/not_abstract.txt").stream().map(s -> notPattern(s)).collect(Collectors.toList());
+		List<Pattern> notTitle = PubFetcher.getResource(SelectPub.class, "select/not_title.txt").stream().map(s -> notPattern(s)).collect(Collectors.toList());
+
 		Scrape scrape = new Scrape(fetcherArgs.getPrivateArgs().getJournalsYaml(), fetcherArgs.getPrivateArgs().getWebpagesYaml());
 
 		String idfFile = outputPath.resolve(Common.IDF_FILE).toString();
@@ -1773,8 +1776,6 @@ public final class Pass2 {
 
 			List<Diff> diffs = new ArrayList<>();
 			List<Tool> tools = new ArrayList<>();
-			List<Pattern> notAbstract = PubFetcher.getResource(SelectPub.class, "select/not_abstract.txt").stream().map(s -> notPattern(s)).collect(Collectors.toList());
-			List<Pattern> notTitle = PubFetcher.getResource(SelectPub.class, "select/not_title.txt").stream().map(s -> notPattern(s)).collect(Collectors.toList());
 
 			logger.info(mainMarker, "{}Writing {} pass2 results to {}", logPrefix, results.size(), resultsPath.toString());
 			resultIndex = 0;

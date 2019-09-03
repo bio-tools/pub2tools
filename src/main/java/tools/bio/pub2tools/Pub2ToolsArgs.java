@@ -108,7 +108,7 @@ public class Pub2ToolsArgs extends BasicArgs {
 	@Parameter(names = { "--fetcher-threads", "--fetch-threads" }, description = "TODO")
 	int fetcherThreads = 8;
 
-	@Parameter(names = { "--mapper-threads",  "--map-threads" }, description = "TODO")
+	@Parameter(names = { "--mapper-threads", "--map-threads" }, description = "TODO")
 	int mapperThreads = 4;
 
 	@Parameter(names = { "--verbose" }, description = "TODO")
