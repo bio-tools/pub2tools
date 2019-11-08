@@ -4,6 +4,11 @@
 # list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
+
+# https://github.com/readthedocs/readthedocs.org/issues/2569
+master_doc = 'index'
+
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
