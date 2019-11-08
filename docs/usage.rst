@@ -6,7 +6,7 @@ Usage manual
 
 After Pub2Tools is `installed <https://github.com/bio-tools/pub2tools/blob/master/INSTALL.md>`_, it can be executed on the command line by running the ``java`` command (from a Java Runtime Environment (JRE) capable of running at least version 8 of Java), while giving the compiled Pub2Tools .jar file as argument. For example, executing Pub2Tools with the argument ``-h`` or ``--help`` outputs a list of all possible parameters and commands:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar --help
 
@@ -38,7 +38,7 @@ The given OWL file can be a path to a file in the local file system or a web lin
 
 Examples copying the EDAM ontology file to the directory ``results``:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -copy-edam results --edam path/to/EDAM.owl
   $ java -jar path/to/pub2tools-<version>.jar -copy-edam results --edam http://edamontology.org/EDAM.owl
@@ -54,7 +54,7 @@ Pre-generated IDF files are provided in the EDAMmap repo: `biotools.idf <https:/
 
 Example copying the (either downloaded or generated) IDF files from their location on local disk to the ``results`` directory:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -copy-idf results --idf path/to/tf.idf --idf-stemmed path/to/tf.stemmed.idf
 
@@ -69,7 +69,7 @@ Calls the same code as the `EDAMmap Util <https://github.com/edamontology/edamma
 
 Example fetching bio.tools content to the ``results`` directory:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -get-biotools results
 
@@ -82,7 +82,7 @@ Copy the file containing `bio.tools`_ content in JSON format given with the ``--
 
 Example copying bio.tools content to the ``results`` directory:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -copy-biotools results --biotools path/to/biotools.json
 
@@ -140,14 +140,14 @@ Some journals have articles suitable for bio.tools more often than some other jo
 
 Two equivalent examples fetching all publication IDs for the month of August 2019 to the directory ``results``:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -select-pub results --from 2019-08-01 --to 2019-08-31
   $ java -jar path/to/pub2tools-<version>.jar -select-pub results --month 2019-08
 
 Example selecting publication IDs from publications added to Europe PMC on the 23rd of August 2019:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -select-pub results --day 2019-08-23
 
@@ -160,7 +160,7 @@ Copy the file containing `publication IDs`_ to download with `-fetch-pub`_ from 
 
 Example copying the file containing publication IDs to the ``results`` directory:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -copy-pub results --pub path/to/pub.txt
 
@@ -178,7 +178,7 @@ Calls the same code as the `PubFetcher CLI <https://github.com/edamontology/pubf
 
 Example initialising an empty database file to the ``results`` directory:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -init-db results
 
@@ -191,7 +191,7 @@ Copy the `PubFetcher database`_ given with the ``--db`` parameter to the file :r
 
 Example copying an existing database to the ``results`` directory:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -copy-db results --db path/to/db.db
 
@@ -215,7 +215,7 @@ For best results, before a major run PubFetcher `scraping rules <https://github.
 
 Example of running the step with some non-default parameter values:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -fetch-pub results --timeout 30000 --journalsYaml fixes.yaml --fetcher-threads 16
 
@@ -264,7 +264,7 @@ In the end, results are written to :ref:`pass1.json <pass1_json>` for further pr
 
 Example of running the step:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -pass1 results
 
@@ -279,7 +279,7 @@ For best results, before a major run PubFetcher `scraping rules <https://github.
 
 Example of running the step with some non-default parameter values:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -fetch-web results --timeout 30000 --webpagesYaml fixes.yaml --fetcher-threads 16
 
@@ -402,7 +402,7 @@ All entries for which the `final decision`_ is positive and that are determined 
 
 Example of running the step:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -pass2 results
 
@@ -421,7 +421,7 @@ More precisely, annotating with terms from the "topic" and "operation" branches 
 
 Example of running the step with some non-default parameter values:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -map results --stemming false --branches topic operation data format --matches 5 --mapper-threads 8
 
@@ -440,7 +440,7 @@ All parameters (like ``--timeout``, ``--fetcher-threads``, ``--matches``) influe
 
 An example of running the command:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -all results --edam http://edamontology.org/EDAM.owl --idf https://github.com/edamontology/edammap/raw/master/doc/biotools.idf --idf-stemmed https://github.com/edamontology/edammap/raw/master/doc/biotools.stemmed.idf --month 2019-08
 
@@ -457,7 +457,7 @@ As no `setup commands`_ are run, then there are no mandatory parameters. However
 
 An example of running the command:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -resume results
 
@@ -502,7 +502,7 @@ Examples
 
 A quickstart example for August 2019, where the EDAM ontology and IDF files and the entire content of bio.tools are downloaded from the web and there are no deviations from default values in any of the steps, is the following:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -all results \
   --edam http://edamontology.org/EDAM.owl \
@@ -512,7 +512,7 @@ A quickstart example for August 2019, where the EDAM ontology and IDF files and 
 
 The next example executes each individual setup and step command from start to final results, while changing some default values:
 
-.. code:: bash
+.. code-block:: bash
 
   # The EDAM ontology was previously downloaded to the local file system
   # to path/to/EDAM.owl and is copied from there to results/EDAM.owl
@@ -555,7 +555,7 @@ The next example executes each individual setup and step command from start to f
 
 The following example is equivalent with the previous one, just all commands have been replaced with one `-all`_ command:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -all results \
   --edam path/to/EDAM.owl --idf path/to/tf.idf \
@@ -567,7 +567,7 @@ The following example is equivalent with the previous one, just all commands hav
 
 All files of the setup can be obtained through some external means and simply copied to the output directory ``results``:
 
-.. code:: bash
+.. code-block:: bash
 
   # Copy a previously downloaded EDAM ontology to the output directory
   $ java -jar path/to/pub2tools-<version>.jar -copy-edam results \
@@ -598,7 +598,7 @@ All files of the setup can be obtained through some external means and simply co
 
 The following `-all`_ command is equivalent to the previous list of commands:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -all results \
   --edam path/to/EDAM.owl --idf path/to/tf.idf --idf-stemmed \
@@ -616,7 +616,7 @@ The following `-all`_ command is equivalent to the previous list of commands:
 
 When fetching publications and web pages, some resources might be temporarily down. So for slightly better results, one option could be to wait a few days after an initial fetch and hope that a few extra resources would be available then. Due to PubFetcher's logic, publications and web pages that were successfully fetched in full the first time, are not retried during refetching:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -fetch-pub results
   $ java -jar path/to/pub2tools-<version>.jar -pass1 results
@@ -630,7 +630,7 @@ When fetching publications and web pages, some resources might be temporarily do
 
 To run all steps again after the wait, another option would be to just use the `-resume`_ command after removing :ref:`step.txt <step_txt>`:
 
-.. code:: bash
+.. code-block:: bash
 
   $ java -jar path/to/pub2tools-<version>.jar -fetch-pub results
   $ java -jar path/to/pub2tools-<version>.jar -pass1 results
@@ -659,7 +659,7 @@ In addition, the file :ref:`to_biotools.json <to_biotools_json>` will probably n
 
 Running Pub2Tools on existing bio.tools content can be done in the following way (needs `EDAMmap-Util <https://github.com/edamontology/edammap/wiki/manual#util>`_ from EDAMmap_):
 
-.. code:: bash
+.. code-block:: bash
 
   # Download all bio.tools content to biotools.json
   $ java -jar path/to/edammap-util-<version>.jar -biotools-full biotools.json

@@ -533,7 +533,7 @@ credit[]
 
 As an example, consider the following new entry:
 
-.. code:: json
+.. code-block:: json
 
   {
     "name" : "PAWER",
