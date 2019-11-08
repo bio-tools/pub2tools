@@ -1,7 +1,7 @@
 
-##############
-1 Usage manual
-##############
+############
+Usage manual
+############
 
 
 After Pub2Tools is `installed <https://github.com/bio-tools/pub2tools/blob/master/INSTALL.md>`_, it can be executed on the command line by running the ``java`` command (from a Java Runtime Environment (JRE) capable of running at least version 8 of Java), while giving the compiled Pub2Tools .jar file as argument. For example, executing Pub2Tools with the argument ``-h`` or ``--help`` outputs a list of all possible parameters and commands:
@@ -363,7 +363,7 @@ Description
 License
   License information for the bio.tools `license attribute <https://biotools.readthedocs.io/en/latest/curators_guide.html#license>`_ is looked for in the ``homepage`` and in the ``link``, ``download``, ``documentation`` links (in the `license field <https://github.com/edamontology/pubfetcher/wiki/output#license>`_ provided by PubFetcher) and also in the publication abstract. The most frequently encountered license is chosen as the suggested license.
 
-  An encountered license string must be mapped to the SPDX inspired enumeration used in bio.tools (see `license.txt <https://github.com/bio-tools/pub2tools/blob/master/src/main/resources/pass2/license.txt>`_). Difficulties in doing so include the fact, that many licenses have versions (which can be specified in different ways, like "GPL-3", "GPL(>= 3)" or "GPLv3", or not specified at all) and even the license name can be specified differently (as an acronym or fully spelled out or something in-between or there are just different ways to mean the same license). In free text, like the publication abstract, some license strings from the enumeration can sometimes match words in the text that are actually not about a license, so require the presense of ``"Licen[sc]"`` in the immediate neighbourhood of such matches to avoid false positives.
+  An encountered license string must be mapped to the SPDX inspired enumeration used in bio.tools (see `license.txt <https://github.com/bio-tools/pub2tools/blob/master/src/main/resources/pass2/license.txt>`_). Difficulties in doing so include the fact, that many licenses have versions (which can be specified in different ways, like "GPL-3", "GPL(>= 3)" or "GPLv3", or not specified at all) and even the license name can be specified differently (as an acronym or fully spelled out or something in-between or there are just different ways to mean the same license). In free text, like the publication abstract, some license strings from the enumeration can sometimes match words in the text that are actually not about a license, so require the presence of ``"Licen[sc]"`` in the immediate neighbourhood of such matches to avoid false positives.
 
   .. _usage_language:
 Language

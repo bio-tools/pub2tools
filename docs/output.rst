@@ -1,9 +1,9 @@
 
 .. _output:
 
-########
-2 Output
-########
+######
+Output
+######
 
 All results and intermediate files will be output to the `output directory`_ specified by the user. The main results files of interest are `results.csv`_, where all results with all possible extra data are output, `diff.csv`_, where potential fixes to some `bio.tools <https://bio.tools>`_ content is output (based on differences of new entries and corresponding entries already :ref:`existing in bio.tools <usage_existing>`), and `to_biotools.json`_, where new additions to bio.tools are output. All intermediate files are also copied and kept in the output directory for potential reproducibility and debugging purposes.
 
