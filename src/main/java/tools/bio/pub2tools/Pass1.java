@@ -1002,7 +1002,7 @@ public final class Pass1 {
 					break;
 				}
 
-				if (titleAbstractLink.startsWith(fulltextLink)) {
+				if (titleAbstractLink.startsWith(fulltextLink) && !fulltextLink.isEmpty()) {
 					String rest = titleAbstractLink.substring(fulltextLink.length() - 1);
 					if (Common.LINK_COMPARE_REST.matcher(rest).matches()) {
 						titleAbstractLinks.set(i, start + fulltextLink);
