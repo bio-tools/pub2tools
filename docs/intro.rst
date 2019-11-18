@@ -23,14 +23,14 @@ For selecting suitable publications and downloading their content, Pub2Tools is 
 
 Publications are downloaded through the `PubFetcher <https://github.com/edamontology/pubfetcher>`_ library, that in addition to Europe PMC supports fetching publication content from other resources as fallback, for example directly from publisher web sites using the given DOI. In addition, PubFetcher provides support for downloading the content of links extracted by Pub2Tools and provides a database for storing all downloaded content.
 
-Pub2Tools is also leveraging `EDAMmap <https://github.com/edamontology/edammap>`_, for preprocessing of input free text (including the extraction of links), for downloading and loading of bio.tools content, for `tf-idf <https://en.wikipedia.org/wiki/Tf%E2%80%93idf>`_ support, and of course, for mapping of entries to `EDAM ontology`_ terms.
+Pub2Tools is also leveraging `EDAMmap <https://github.com/edamontology/edammap>`_, for preprocessing of input free text (including the extraction of links), for downloading and loading of bio.tools content, for `tf–idf <https://en.wikipedia.org/wiki/Tf%E2%80%93idf>`_ support, and of course, for mapping of entries to `EDAM ontology`_ terms.
 
 
 *******
 Caveats
 *******
 
-Inevitably, there will be false positives and false negatives, both at entry level (some suggested tools are not actual tools and some actual tools are missed by Pub2Tools) and at individual attribute level. Generally, if we try to decrease the number FN entries, the number of FPs also tends to increase. Currently, Pub2Tools has been tuned to not have too many FPs, to not discourage curators into looking at all entries in the results. Some FNs are rather hopeless: quite obviously, unpublished tools can't be found by Pub2Tools, but in addition, there is the limitation that the tool name must be mentioned somewhere in the publication title or abstract.
+Inevitably, there will be false positives and false negatives, both at entry level (some suggested tools are not actual tools and some actual tools are missed by Pub2Tools) and at individual attribute level. Generally, if we try to decrease the number of FN entries, the number of FPs also tends to increase. Currently, Pub2Tools has been tuned to not have too many FPs, to not discourage curators into looking at all entries in the results. Some FNs are rather hopeless: quite obviously, unpublished tools can't be found by Pub2Tools, but in addition, there is the limitation that the tool name must be mentioned somewhere in the publication title or abstract.
 
 For slightly better results, before a bigger run of Pub2Tools, it could be beneficial to `test if PubFetcher scraping rules <https://github.com/edamontology/pubfetcher/wiki/scraping#testing-of-rules>`_ are still up to date. Also, publisher web sites have to be consulted sometimes, so it could be beneficial to run Pub2Tools in a network with good access to journal articles.
 

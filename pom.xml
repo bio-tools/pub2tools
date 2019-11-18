@@ -28,7 +28,7 @@
 
   <name>Pub2Tools</name>
   <url>https://github.com/bio-tools/pub2tools</url>
-  <description></description>
+  <description>A utility constructing bio.tools entries from publications</description>
 
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>

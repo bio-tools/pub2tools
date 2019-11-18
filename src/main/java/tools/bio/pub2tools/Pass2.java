@@ -120,6 +120,27 @@ public final class Pass2 {
 	private static final Pattern HOMEPAGE_EXCLUDE = Pattern.compile("(?i)^(https?://)?(www\\.)?(clinicaltrials\\.gov|osf\\.io|annualreviews\\.org|w3\\.org|creativecommons\\.org)([^\\p{L}]|$)");
 	private static final Pattern JOURNAL_EXCLUDE = Pattern.compile("(?i)^(Systematic reviews|The Cochrane Database of Systematic Reviews|Annual review of .*)$");
 
+	private static final String[] RESULTS_HEADER = new String[] { "pmid", "pmcid", "doi", "same_suggestions",
+		"score", "score2", "score2_parts", "confidence", "include", "existing", "suggestion_original", "suggestion", "suggestion_processed",
+		"publication_and_name_existing", "name_existing_some_publication_different", "some_publication_existing_name_different", "name_existing_publication_different",
+		"name_match", "link_match", "name_word_match",
+		"links_abstract", "links_fulltext", "from_abstract_link",
+		"homepage", "homepage_broken", "homepage_missing", "homepage_biotools", "link", "link_biotools", "download", "download_biotools", "documentation", "documentation_biotools", "broken_links",
+		"other_scores", "other_scores2", "other_scores2_parts", "other_suggestions_original", "other_suggestions", "other_suggestions_processed",
+		"other_publication_and_name_existing", "other_name_existing_some_publication_different", "other_some_publication_existing_name_different", "other_name_existing_publication_different",
+		"other_links_abstract", "other_links_fulltext",
+		"leftover_links_abstract", "leftover_links_fulltext",
+		"title", "tool_title_others", "tool_title_extracted_original", "tool_title", "tool_title_pruned", "tool_title_acronym",
+		"description", "description_biotools",
+		"license_homepage", "license_link", "license_download", "license_documentation", "license_abstract", "license", "license_biotools",
+		"language_homepage", "language_link", "language_download", "language_documentation", "language_abstract", "language", "language_biotools",
+		"oa", "journal_title", "pub_date", "citations_count", "citations_timestamp", "citations_count_normalised",
+		"corresp_author_name", "credit_name_biotools", "corresp_author_orcid", "credit_orcidid_biotools", "corresp_author_email", "credit_email_biotools", "corresp_author_phone", "corresp_author_uri", "credit_url_biotools", "credit" };
+	private static final String[] DIFF_HEADER = new String[] { "biotools_id", "score_score2", "current_publications", "modify_publications", "add_publications", "current_name", "modify_name", "possibly_related",
+		"current_homepage", "modify_homepage", "current_links", "add_links", "current_downloads", "add_downloads", "current_documentations", "add_documentations",
+		"current_license", "modify_license", "current_languages", "add_languages", "current_credits", "modify_credits", "add_credits" };
+	private static final String DOCS_OUTPUT = "https://pub2tools.readthedocs.io/en/latest/output.html#";
+
 	private static boolean isBroken(String url, Database db) {
 		if (db.getWebpage(url, false) != null && !db.getWebpage(url, false).isBroken()) {
 			return false;
@@ -1228,26 +1249,10 @@ public final class Pass2 {
 				BufferedWriter diffWriter = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(diffPath), diffEncoder));
 				BufferedWriter newWriter = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(newPath), newEncoder))) {
 
-			resultsWriter.write("pmid\tpmcid\tdoi\tsame_suggestions"
-					+ "\tscore\tscore2\tscore2_parts\tconfidence\tinclude\texisting\tsuggestion_original\tsuggestion\tsuggestion_processed"
-					+ "\tpublication_and_name_existing\tname_existing_some_publication_different\tsome_publication_existing_name_different\tname_existing_publication_different"
-					+ "\tname_match\tlink_match\tname_word_match"
-					+ "\tlinks_abstract\tlinks_fulltext\tfrom_abstract_link"
-					+ "\thomepage\thomepage_broken\thomepage_missing\thomepage_biotools\tlink\tlink_biotools\tdownload\tdownload_biotools\tdocumentation\tdocumentation_biotools\tbroken_links"
-					+ "\tother_scores\tother_scores2\tother_scores2_parts\tother_suggestions_original\tother_suggestions\tother_suggestions_processed"
-					+ "\tother_publication_and_name_existing\tother_name_existing_some_publication_different\tother_some_publication_existing_name_different\tother_name_existing_publication_different"
-					+ "\tother_links_abstract\tother_links_fulltext"
-					+ "\tleftover_links_abstract\tleftover_links_fulltext"
-					+ "\ttitle\ttool_title_others\ttool_title_extracted_original\ttool_title\ttool_title_pruned\ttool_title_acronym"
-					+ "\tdescription\tdescription_biotools"
-					+ "\tlicense_homepage\tlicense_link\tlicense_download\tlicense_documentation\tlicense_abstract\tlicense\tlicense_biotools"
-					+ "\tlanguage_homepage\tlanguage_link\tlanguage_download\tlanguage_documentation\tlanguage_abstract\tlanguage\tlanguage_biotools"
-					+ "\toa\tjournal_title\tpub_date\tcitations_count\tcitations_timestamp\tcitations_count_normalised"
-					+ "\tcorresp_author_name\tcredit_name_biotools\tcorresp_author_orcid\tcredit_orcidid_biotools\tcorresp_author_email\tcredit_email_biotools\tcorresp_author_phone\tcorresp_author_uri\tcredit_url_biotools\tcredit\n");
-
-			diffWriter.write("biotools_id\tscore_score2\tcurrent_publications\tmodify_publications\tadd_publications\tcurrent_name\tmodify_name\tpossibly_related"
-					+ "\tcurrent_homepage\tmodify_homepage\tcurrent_links\tadd_links\tcurrent_downloads\tadd_downloads\tcurrent_documentations\tadd_documentations"
-					+ "\tcurrent_license\tmodify_license\tcurrent_languages\tadd_languages\tcurrent_credits\tmodify_credits\tadd_credits\n");
+			resultsWriter.write(Arrays.stream(RESULTS_HEADER).collect(Collectors.joining("\t")) + "\n");
+			resultsWriter.write(Arrays.stream(RESULTS_HEADER).map(s -> DOCS_OUTPUT + s.replaceAll("_", "-")).collect(Collectors.joining("\t")) + "\n");
+			diffWriter.write(Arrays.stream(DIFF_HEADER).collect(Collectors.joining("\t")) + "\n");
+			diffWriter.write(Arrays.stream(DIFF_HEADER).map(s -> DOCS_OUTPUT + s.replaceAll("_", "-")).collect(Collectors.joining("\t")) + "\n");
 
 			logger.info(mainMarker, "{}Calculating score2 for relevant results", logPrefix);
 			for (Result2 result : results) {

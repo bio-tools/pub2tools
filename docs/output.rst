@@ -39,7 +39,7 @@ The `EDAM ontology <http://edamontology.org/page>`_ file is needed by the :ref:`
 tf.idf
 ======
 
-A simple file of tab-separated values containing normalised `tf-idf <https://en.wikipedia.org/wiki/Tf%E2%80%93idf>`_ scores of (unstemmed) words occuring in the `bio.tools <https://bio.tools>`_ corpus. It can either be downloaded or generated, more information at :ref:`copy_idf`, which is the command used to copy the file to the output directory.
+A simple file of tab-separated values containing normalised `tf–idf <https://en.wikipedia.org/wiki/Tf%E2%80%93idf>`_ scores of (unstemmed) words occuring in the `bio.tools <https://bio.tools>`_ corpus. It can either be downloaded or generated, more information at :ref:`copy_idf`, which is the command used to copy the file to the output directory.
 
 .. note::
   As the IDF files are one of the largest files in the output directory and these files are potentially equal across many runs of Pub2Tools, then these could be the files to delete first in a finalised output directory to save disk space (or linked to some master IDF files with ``ln -s``).
@@ -105,14 +105,14 @@ Results of the :ref:`pass1` command, that are later used as input for :ref:`pass
 results.csv
 ===========
 
-This file will contain all results of Pub2Tools as output by the :ref:`pass2` command, including entries that were excluded for entry to bio.tools or found to be already existing there. In addition to the end results that can be inserted to bio.tools attributes, each entry will contain all possible other data related to the entry and values of intermediate results, but also values currently present in bio.tools for entries that were found to be existing there. All these values are documented in `results.csv columns`_.
+This file will contain all results of Pub2Tools as output by the :ref:`pass2` command, including entries that were excluded for entry to bio.tools or found to be already existing there. In addition to the end results that can be inserted to bio.tools attributes, each entry will contain all possible other data related to the entry and values of intermediate results, but also values currently present in bio.tools for entries that were found to be existing there. All these values are documented in `results.csv columns`_. The first row of the file specifies the column names and the second row contains links to the column documentations in `results.csv columns`_.
 
 .. _diff_csv:
 
 diff.csv
 ========
 
-This file will contain entries that were found to be :ref:`existing in bio.tools <usage_existing>` in :ref:`pass2`. More precisely, it will only contain entries, that were found to be existing in bio.tools and for which some value was found to be different or missing in bio.tools, and the contents of the file will be a listing of these difference (i.e. differing or missing values). Many of these differences are mistakes made by Pub2Tools, but many are also pointing to incorrect or missing information in bio.tools, thus the contents of this file can be used to improve existing entries of bio.tools. In rare circumstances, some entries that are not actually already existing in bio.tools might be mistakenly diverted here (instead of `to_biotools.json`_) -- such entries should be added to bio.tools manually. This file can be especially useful if Pub2Tools is run on all publications currently in bio.tools, like exemplified in :ref:`improving_existing`. The structure of the file is documented in `diff.csv columns`_.
+This file will contain entries that were found to be :ref:`existing in bio.tools <usage_existing>` in :ref:`pass2`. More precisely, it will only contain entries, that were found to be existing in bio.tools and for which some value was found to be different or missing in bio.tools, and the contents of the file will be a listing of these difference (i.e. differing or missing values). Many of these differences are mistakes made by Pub2Tools, but many are also pointing to incorrect or missing information in bio.tools, thus the contents of this file can be used to improve existing entries of bio.tools. In rare circumstances, some entries that are not actually already existing in bio.tools might be mistakenly diverted here (instead of `to_biotools.json`_) -- such entries should be added to bio.tools manually. This file can be especially useful if Pub2Tools is run on all publications currently in bio.tools, like exemplified in :ref:`improving_existing`. The structure of the file is documented in `diff.csv columns`_. The first row of the file specifies the column names and the second row contains links to the column documentations in `diff.csv columns`_.
 
 .. _new_json:
 
@@ -289,6 +289,7 @@ _`tool_title_acronym`
   Contains the acronym version of the tool_title_, with values of different publications separated by ``" | "``. The acronym must be in parenthesis after the expanded name and it is found and extracted when processing tool_title_extracted_original_. Like tool_title_extracted_original_ and tool_title_pruned_, the acronym version of tool_title is used in the :ref:`calculations of the score2 <usage_score2>` part concerning the tool_title.
 
   .. _output_description:
+  .. _description:
 description
   A list of descriptions (separated by ``" | "``) suggested as the `description attribute`_ of the tool for bio.tools. This is the one column that definitely need curation: a curator can choose one of the descriptions from the list or combine multiple description suggestions into the final description of the tool in bio.tools. More information can be found in the :ref:`description part <usage_description>` of the second pass (:ref:`pass2`), where the descriptions are constructed.
 
@@ -614,7 +615,3 @@ The name and publication are always filled, because all entries are extracted fr
 
 .. note::
   Pub2Tools sometimes also extracts and writes incorrect information to an attribute (except publication and credit information which is mostly correct), so the percentages presented in the table would be slightly lower if only correctly filled attributes would be taken into account.
-
-..
-
-.. _description: output_description_

@@ -607,7 +607,7 @@ public final class Pub2Tools {
 		// otherwise invalid.log will be created if arg --log is null (and var output is also null)
 		logger = LogManager.getLogger();
 		logger.debug(String.join(" ", argv));
-		logger.info(mainMarker, "This is {} {}", version.getName(), version.getVersion());
+		logger.info(mainMarker, "This is {} {} ({})", version.getName(), version.getVersion(), version.getUrl());
 
 		try {
 			run(args, version);
