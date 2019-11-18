@@ -326,12 +326,12 @@ public final class DescriptionGetter {
 					}).collect(Collectors.joining(", "))
 				);
 		}
-		String description = "";
+		String messagesText = "";
 		boolean messagesMaxLengthReached = false;
 		for (String message : messages) {
-			message = "> " + message + " | ";
-			if (description.length() + message.length() <= BIOTOOLS_DESCRIPTION_MESSAGE_MAX_LENGTH && !messagesMaxLengthReached) {
-				description += message;
+			String messageSep = " | > " + message;
+			if (messagesText.length() + messageSep.length() <= BIOTOOLS_DESCRIPTION_MESSAGE_MAX_LENGTH && !messagesMaxLengthReached) {
+				messagesText += messageSep;
 			} else {
 				messagesMaxLengthReached = true;
 				logger.warn("No room left for description messages: discarded message '{}' (for name '{}')", message, name);
@@ -346,27 +346,26 @@ public final class DescriptionGetter {
 			}
 		}
 		int initialDescriptionsSize = descriptions.size();
-		String allDescriptions = getDescription(descriptions, homepage, linkLinks, documentationLinks, downloadLinks, db, scrape, BIOTOOLS_DESCRIPTION_MIN_LENGTH, BIOTOOLS_DESCRIPTION_MAX_LENGTH - description.length(), name, preProcessor);
+		String description = getDescription(descriptions, homepage, linkLinks, documentationLinks, downloadLinks, db, scrape, BIOTOOLS_DESCRIPTION_MIN_LENGTH, BIOTOOLS_DESCRIPTION_MAX_LENGTH - messagesText.length(), name, preProcessor);
 		if (descriptions.size() <= initialDescriptionsSize) {
-			allDescriptions = getDescription(descriptions, homepage, linkLinks, documentationLinks, downloadLinks, db, scrape, BIOTOOLS_DESCRIPTION_MINMIN_LENGTH, BIOTOOLS_DESCRIPTION_MAX_LENGTH - description.length(), name, preProcessor);
+			description = getDescription(descriptions, homepage, linkLinks, documentationLinks, downloadLinks, db, scrape, BIOTOOLS_DESCRIPTION_MINMIN_LENGTH, BIOTOOLS_DESCRIPTION_MAX_LENGTH - messagesText.length(), name, preProcessor);
 		}
-		description += allDescriptions;
-		if (descriptions.size() <= initialDescriptionsSize && description.length() + 4 <= BIOTOOLS_DESCRIPTION_MAX_LENGTH) {
-			if (!allDescriptions.isEmpty()) {
+		if (descriptions.size() <= initialDescriptionsSize && description.length() + messagesText.length() + 4 <= BIOTOOLS_DESCRIPTION_MAX_LENGTH) {
+			if (!description.isEmpty()) {
 				description += " | ";
 			}
 			List<String> abstractDescriptions = new ArrayList<>();
 			int abstractSentencesLength = 0;
 			for (List<String> abstractSentences : result.getAbstractSentences()) {
-				if (description.length() + abstractSentencesLength >= BIOTOOLS_DESCRIPTION_MAX_LENGTH) {
+				if (description.length() + messagesText.length() + abstractSentencesLength >= BIOTOOLS_DESCRIPTION_MAX_LENGTH) {
 					break;
 				}
 				if (abstractSentences.size() > 0) {
 					boolean end = false;
-					String abstractDescription = Common.pruneToMax(Common.WHITESPACE.matcher(abstractSentences.get(0).replaceAll("\\|", ":")).replaceAll(" ").trim(), BIOTOOLS_DESCRIPTION_MAX_LENGTH - description.length() - abstractSentencesLength);
+					String abstractDescription = Common.pruneToMax(Common.WHITESPACE.matcher(abstractSentences.get(0).replaceAll("\\|", ":")).replaceAll(" ").trim(), BIOTOOLS_DESCRIPTION_MAX_LENGTH - description.length() - messagesText.length() - abstractSentencesLength);
 					for (int i = 1; i < abstractSentences.size(); ++i) {
 						String abstractSentence = Common.WHITESPACE.matcher(abstractSentences.get(i).replaceAll("\\|", ":")).replaceAll(" ").trim();
-						if (description.length() + abstractSentencesLength + abstractDescription.length() + 2 + abstractSentence.length() <= BIOTOOLS_DESCRIPTION_MAX_LENGTH) {
+						if (description.length() + messagesText.length() + abstractSentencesLength + abstractDescription.length() + 2 + abstractSentence.length() <= BIOTOOLS_DESCRIPTION_MAX_LENGTH) {
 							abstractDescription += ". " + abstractSentence;
 						} else {
 							end = true;
@@ -381,11 +380,12 @@ public final class DescriptionGetter {
 				}
 			}
 			if (abstractDescriptions.isEmpty()) {
-				description += Common.pruneToMax("NO DESCRIPTION FOUND FROM LINKS OR ABSTRACT!", BIOTOOLS_DESCRIPTION_MAX_LENGTH - description.length());
+				description += Common.pruneToMax("NO DESCRIPTION FOUND FROM LINKS OR ABSTRACT!", BIOTOOLS_DESCRIPTION_MAX_LENGTH - description.length() - messagesText.length());
 			} else {
 				description += String.join(" | ", abstractDescriptions);
 			}
 		}
+		description += messagesText;
 		String descriptionOriginal = description;
 		if (description.length() < BIOTOOLS_SCHEMA_DESCRIPTION_MIN) {
 			description = Common.fillToMin(description, BIOTOOLS_SCHEMA_DESCRIPTION_MIN);

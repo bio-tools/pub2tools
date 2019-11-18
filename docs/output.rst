@@ -293,7 +293,7 @@ _`tool_title_acronym`
 description
   A list of descriptions (separated by ``" | "``) suggested as the `description attribute`_ of the tool for bio.tools. This is the one column that definitely need curation: a curator can choose one of the descriptions from the list or combine multiple description suggestions into the final description of the tool in bio.tools. More information can be found in the :ref:`description part <usage_description>` of the second pass (:ref:`pass2`), where the descriptions are constructed.
 
-  In addition to the list of descriptions, a list of messages to the curator (also separated by ``" | "``) are added to the front of the descriptions. The messages start with ``"> "`` and are uppercase. If there are any messages to the curator, then these should be acknowledged, potentially acted upon and deleted. Messages could be the following:
+  In addition to the list of descriptions, a list of messages to the curator (also separated by ``" | "``) are appended to the descriptions (after a ``" | "``). The messages start with ``"> "`` and are uppercase. If there are any messages to the curator, then these should be acknowledged, potentially acted upon and deleted. Messages could be the following:
 
   * NOT INCLUDED! (include_ is ``false``)
   * HOMEPAGE BROKEN! (homepage_broken_ is ``true``)
