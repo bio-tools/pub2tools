@@ -570,6 +570,8 @@ public final class Pass2 {
 			}
 			tool.setCredit(credit);
 
+			tool.setConfidence_flag(suggestion.confidence().toString());
+
 			tools.add(tool);
 		}
 
@@ -980,7 +982,7 @@ public final class Pass2 {
 		writeField(resultsWriter, suggestion != null && suggestion.getScore2() > -1 ? String.valueOf(suggestion.getScore2()) : null);
 		writeField(resultsWriter, suggestion != null && suggestion.getScore2() > -1 ? Arrays.toString(suggestion.getScore2Parts()) : null);
 
-		writeField(resultsWriter, suggestion != null ? suggestion.confidence().name() : null);
+		writeField(resultsWriter, suggestion != null ? suggestion.confidence().toString() : null);
 		writeField(resultsWriter, String.valueOf(include));
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(q -> q.getBiotoolsID()).collect(Collectors.joining(" | ")));
 

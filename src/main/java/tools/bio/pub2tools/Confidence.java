@@ -20,8 +20,19 @@
 package tools.bio.pub2tools;
 
 public enum Confidence {
-	high,
-	medium,
-	low,
-	very_low
+	high("high"),
+	medium("medium"),
+	low("low"),
+	very_low("very low");
+
+	private final String name;
+
+	private Confidence(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return name;
+	}
 }

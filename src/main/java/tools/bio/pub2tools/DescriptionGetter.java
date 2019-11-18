@@ -279,12 +279,6 @@ public final class DescriptionGetter {
 		if (suggestion == null || !include) {
 			messages.add("NOT INCLUDED!");
 		}
-		if (suggestion != null) {
-			Confidence confidence = suggestion.confidence();
-			if (confidence != Confidence.high) {
-				messages.add(confidence.name().toUpperCase() + " CONFIDENCE!");
-			}
-		}
 		if (homepageBroken) {
 			messages.add("HOMEPAGE BROKEN!");
 		} else if (homepageMissing) {
