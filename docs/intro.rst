@@ -3,12 +3,14 @@
 What is Pub2Tools?
 ##################
 
-Pub2Tools is a Java command-line tool that looks through the scientific literature available in `Europe PMC <https://europepmc.org/>`_ and constructs entry candidates for the `bio.tools <https://bio.tools/>`_ software registry from suitable publications. It automatises a lot of the process of growing bio.tools, though results of the tool still need some manual curation before they can be incorporated into bio.tools. Pub2Tools could be run at the beginning of each month to add tools, databases and services published in bioinformatics and life sciences journals during the previous month.
+Pub2Tools is a Java command-line tool that looks through the scientific literature available in `Europe PMC <https://europepmc.org/>`_ and constructs entry candidates for the `bio.tools <https://bio.tools/>`_ software registry from suitable publications. It automates a lot of the process needed for growing bio.tools, though results of the tool still need some manual curation before they are of satisfactory quality. Pub2Tools could be run at the beginning of each month to add hundreds of tools, databases and services published in bioinformatics and life sciences journals during the previous month.
 
 
 ********
 Overview
 ********
+
+First, Pub2Tools gets a list of publications for the given period by :ref:`narrowing down <select_pub>` the entire selection with combinations of keyphrases. Next, the contents of these publications :ref:`are downloaded <fetch_pub>` and the abstract of each publication :ref:`is mined <pass1>` for the potential tool name. Names are assigned confidence scores, with low confidence publications often not being suitable for bio.tools at all. In addition to the tool name, web links matching the name are extracted from the abstract and full text of a publication and :ref:`divided <divide_links>` to the homepage and other link attributes of bio.tools. In a :ref:`second pass <pass2>`, the :ref:`content of links <fetch_web>` and publications is also mined for :ref:`software license <usage_license>` and :ref:`programming language <usage_language>` information and phrases for the :ref:`tool description <usage_description>` attribute are automatically constructed. Good enough :ref:`non-existing <usage_existing>` results are :ref:`chosen for inclusion <final_decision>` to bio.tools. Terms from the EDAM ontology :ref:`are added <map>` to get the final results.
 
 Pub2Tools can be run from start to finish with only one command (:ref:`all`). But :ref:`setup commands <setup_commands>` (fetching or copying the required input files) and :ref:`steps <steps>` (fetching of publications and web pages, mapping to `EDAM ontology <http://edamontology.org/page>`_ terms and applying the Pub2Tools algorithm) can also be applied individually. Execution can be resumed by restarting the last aborted step (:ref:`resume`). Commands can be influenced by changing the default values of :ref:`parameters <parameters>`. Some :ref:`examples <examples>` of running Pub2Tools are provided. One interesting example is :ref:`improving existing bio.tools entries <improving_existing>` added through some other means than Pub2Tools.
 
@@ -21,7 +23,7 @@ Dependencies
 
 For selecting suitable publications and downloading their content, Pub2Tools is leveraging `Europe PMC`_, which among other things allows the `inclusion of preprints <http://blog.europepmc.org/2018/07/preprints.html>`_.
 
-Publications are downloaded through the `PubFetcher <https://github.com/edamontology/pubfetcher>`_ library, that in addition to Europe PMC supports fetching publication content from other resources as fallback, for example directly from publisher web sites using the given DOI. In addition, PubFetcher provides support for downloading the content of links extracted by Pub2Tools and provides a database for storing all downloaded content.
+Publications are downloaded through the `PubFetcher <https://github.com/edamontology/pubfetcher>`_ library, that in addition to Europe PMC supports fetching publication content from other resources as fallback, for example directly from publisher web sites using the given DOI. In addition, PubFetcher provides support for downloading the content of links extracted by Pub2Tools (with support for metadata extraction from some types of links, like code repositories) and provides a database for storing all downloaded content.
 
 Pub2Tools is also leveraging `EDAMmap <https://github.com/edamontology/edammap>`_, for preprocessing of input free text (including the extraction of links), for downloading and loading of bio.tools content, for `tf–idf <https://en.wikipedia.org/wiki/Tf%E2%80%93idf>`_ support, and of course, for mapping of entries to `EDAM ontology`_ terms.
 
@@ -32,7 +34,7 @@ Caveats
 
 Inevitably, there will be false positives and false negatives, both at entry level (some suggested tools are not actual tools and some actual tools are missed by Pub2Tools) and at individual attribute level. Generally, if we try to decrease the number of FN entries, the number of FPs also tends to increase. Currently, Pub2Tools has been tuned to not have too many FPs, to not discourage curators into looking at all entries in the results. Some FNs are rather hopeless: quite obviously, unpublished tools can't be found by Pub2Tools, but in addition, there is the limitation that the tool name must be mentioned somewhere in the publication title or abstract.
 
-For slightly better results, before a bigger run of Pub2Tools, it could be beneficial to `test if PubFetcher scraping rules <https://github.com/edamontology/pubfetcher/wiki/scraping#testing-of-rules>`_ are still up to date. Also, publisher web sites have to be consulted sometimes, so it could be beneficial to run Pub2Tools in a network with good access to journal articles.
+For slightly better results, before a bigger run of Pub2Tools, it could be beneficial to `test if PubFetcher scraping rules <https://pubfetcher.readthedocs.io/en/latest/scraping.html#testing-of-rules>`_ are still up to date. Also, publisher web sites have to be consulted sometimes, so it could be beneficial to run Pub2Tools in a network with good access to journal articles.
 
 Pub2Tools assigns a score for each result entry and orders the results based on this score. However, this score does not describe how "good" or high impact the tool itself is, but rather how confidently the tool name was extracted. A higher score is obtained if the name of the tool is unique, put to the start of the publication title, surrounded by certain keywords (like "called" or "freely") in the abstract and matches a URL in the abstract (but also in the publication full text).
 

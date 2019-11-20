@@ -25,7 +25,7 @@ pub2tools.log
 
 The log file is created to a new output directory by the first command that is run with the output directory as argument. The first two lines of the log file are the arguments given to Pub2Tools and the version of Pub2Tools. Then, the same lines that are output to the console while the command is running, are output to the log file, except also all ``DEBUG`` level messages are output and all log messages coming from `PubFetcher <https://github.com/edamontology/pubfetcher>`_ and `EDAMmap <https://github.com/edamontology/edammap>`_ code are output to the log file (outputting those to the console is turned off by default with the :ref:`parameter <parameters>` ``--verbose OFF``). Any subsequent commands run on the output directory will just append to the existing log file.
 
-The log file could later be used for debugging. One option would be analysing ``ERROR`` level messages, for example with ``grep ERROR pub2tools.log | less``. More information about the structure of a log line and analysing the logs can be found in the PubFetcher documentation about the `log file <https://github.com/edamontology/pubfetcher/wiki/output#log-file>`_.
+The log file could later be used for debugging. One option would be analysing ``ERROR`` level messages, for example with ``grep ERROR pub2tools.log | less``. More information about the structure of a log line and analysing the logs can be found in the PubFetcher documentation about the `log file <https://pubfetcher.readthedocs.io/en/latest/output.html#log-file>`_.
 
 .. _edam_owl:
 
@@ -70,7 +70,7 @@ A list of candidate publication IDs to search tools from. It's a simple text fil
 db.db
 =====
 
-A `PubFetcher database <https://github.com/edamontology/pubfetcher/wiki/output#database>`_ file containing the contents of publications and web pages fetched as part of a Pub2Tools run. It needs to be initialised with :ref:`init_db` or a database with prefetched content can be copied with :ref:`copy_db`. The database can be queried or manipulated with `PubFetcher-CLI <https://github.com/edamontology/pubfetcher/wiki/cli>`_ or `EDAMmap-Util <https://github.com/edamontology/edammap/wiki/manual#util>`_.
+A `PubFetcher database <https://pubfetcher.readthedocs.io/en/latest/output.html#database>`_ file containing the contents of publications and web pages fetched as part of a Pub2Tools run. It needs to be initialised with :ref:`init_db` or a database with prefetched content can be copied with :ref:`copy_db`. The database can be queried or manipulated with `PubFetcher-CLI <https://pubfetcher.readthedocs.io/en/latest/cli.html>`_ or `EDAMmap-Util <https://edammap.readthedocs.io/en/latest/manual.html#edammap-util>`_.
 
 .. _step_txt:
 
@@ -128,21 +128,21 @@ The following bio.tools attributes will always be filled: `name attribute <https
 map.txt
 =======
 
-Additional data about the `EDAMmap results <https://github.com/edamontology/edammap/wiki/manual#results>`_ got using the :ref:`map` command, in plain text format.
+Additional data about the `EDAMmap results <https://edammap.readthedocs.io/en/latest/manual.html#results>`_ got using the :ref:`map` command, in plain text format.
 
 .. _map_dir:
 
 map/
 ====
 
-Additional data about the `EDAMmap results <https://github.com/edamontology/edammap/wiki/manual#results>`_ got using the :ref:`map` command, in a directory of HTML files. To see this mapping data, open ``map/index.html`` in a web browser.
+Additional data about the `EDAMmap results <https://edammap.readthedocs.io/en/latest/manual.html#results>`_ got using the :ref:`map` command, in a directory of HTML files. To see this mapping data, open ``map/index.html`` in a web browser.
 
 .. _map_json:
 
 map.json
 ========
 
-Additional data about the `EDAMmap results <https://github.com/edamontology/edammap/wiki/manual#results>`_ got using the :ref:`map` command, in JSON format.
+Additional data about the `EDAMmap results <https://edammap.readthedocs.io/en/latest/manual.html#results>`_ got using the :ref:`map` command, in JSON format.
 
 .. _to_biotools_json:
 
@@ -159,7 +159,7 @@ Same as `new.json`_, except EDAMmap terms have been added by the :ref:`map` comm
 **********************
 
 _`pmid`
-  As results are extracted from publications, then the first 3 columns are the IDs of the publication -- here, the PubMed ID of the publication is output. These `publication IDs <https://github.com/edamontology/pubfetcher/wiki/output#ids-of-publications>`_ are used to fill the `publication attribute`_ of bio.tools. Sometimes, multiple publications seem to be about the same tool -- in that case the corresponding results are :ref:`merged into one row <merge_same_suggestions>` and the PubMed IDs of these different publications will be separated by ``" | "`` here.
+  As results are extracted from publications, then the first 3 columns are the IDs of the publication -- here, the PubMed ID of the publication is output. These `publication IDs <https://pubfetcher.readthedocs.io/en/latest/output.html#ids-of-publications>`_ are used to fill the `publication attribute`_ of bio.tools. Sometimes, multiple publications seem to be about the same tool -- in that case the corresponding results are :ref:`merged into one row <merge_same_suggestions>` and the PubMed IDs of these different publications will be separated by ``" | "`` here.
 _`pmcid`
   Like pmid_, but for the PubMed Central ID of publications.
 _`doi`
@@ -282,7 +282,7 @@ _`tool_title_extracted_original`
 
   .. _tool_title:
 tool_title
-  The tool_title is the part of the publication title that precedes ``": "``, ``" - "``, ``", a"``, etc. The tool_titles of different publications are separated by ``" | "``. In this column, the intermediate extraction step of the tool_title, as presented in tool_title_extracted_original_, is further processed, for example stop words are removed (this can be further influenced by `Preprocessing parameters <https://github.com/edamontology/edammap/wiki/api#preprocessing>`_). Also, if tool_title_extracted_original_ contains an acronym in parenthesis, then this acronym is removed (to tool_title_acronym_). If this processing does not alter the value in tool_title_extracted_original_, then the value in this column is left empty for readability purposes. The tool_title is often equal to the name of the tool and thus often (but not always) ends up as the name of the entry in suggestion_.
+  The tool_title is the part of the publication title that precedes ``": "``, ``" - "``, ``", a"``, etc. The tool_titles of different publications are separated by ``" | "``. In this column, the intermediate extraction step of the tool_title, as presented in tool_title_extracted_original_, is further processed, for example stop words are removed (this can be further influenced by `Preprocessing parameters <https://edammap.readthedocs.io/en/latest/api.html#preprocessing>`_). Also, if tool_title_extracted_original_ contains an acronym in parenthesis, then this acronym is removed (to tool_title_acronym_). If this processing does not alter the value in tool_title_extracted_original_, then the value in this column is left empty for readability purposes. The tool_title is often equal to the name of the tool and thus often (but not always) ends up as the name of the entry in suggestion_.
 _`tool_title_pruned`
   A further processed tool_title_, where version information and some common words (like "database", "server", "pipeline") have been pruned. If this pruning doesn't remove anything and thus the value is equal to tool_title_, then an empty string would be output to this column instead. Like tool_title_extracted_original_, the pruned version of tool_title is used in the :ref:`calculations of the score2 <usage_score2>` part concerning the tool_title.
 _`tool_title_acronym`
@@ -308,9 +308,9 @@ description
 _`description_biotools`
   Contains the values of the description attributes (separated by ``" | "``) of the bio.tools entries corresponding to the bio.tools IDs in existing_, that is, if the current entry constructed by Pub2Tools is found to be existing in bio.tools, then the descriptions currently in bio.tools are output here to contrast with the value in the column description_. Line breaks and tabs in the bio.tools description will be replaced with the strings ``"\n"``, ``"\r"``, ``"\t"``.
 _`license_homepage`
-  Contains the value of the `license field <https://github.com/edamontology/pubfetcher/wiki/output#license>`_ of the PubFetcher webpage corresponding to the homepage_ URL. Nothing is output, if the field is empty -- the field can usually be filled when it's a URL of a repository. The license string is output as got from PubFetcher and needs to be mapped to a valid bio.tools :ref:`license Enum value <usage_license>` in the second pass (:ref:`pass2`).
+  Contains the value of the `license field <https://pubfetcher.readthedocs.io/en/latest/output.html#license>`_ of the PubFetcher webpage corresponding to the homepage_ URL. Nothing is output, if the field is empty -- the field can usually be filled when it's a URL of a repository. The license string is output as got from PubFetcher and needs to be mapped to a valid bio.tools :ref:`license Enum value <usage_license>` in the second pass (:ref:`pass2`).
 _`license_link`
-  Contains the non-empty values (separated by ``" | "``) of the `license fields <https://github.com/edamontology/pubfetcher/wiki/output#license>`_ of the PubFetcher webpages corresponding to the link_ URLs. The URL follows the license string in parenthesis. The license strings are output as got from PubFetcher and need to be mapped to valid bio.tools :ref:`license Enum values <usage_license>` in the second pass (:ref:`pass2`).
+  Contains the non-empty values (separated by ``" | "``) of the `license fields <https://pubfetcher.readthedocs.io/en/latest/output.html#license>`_ of the PubFetcher webpages corresponding to the link_ URLs. The URL follows the license string in parenthesis. The license strings are output as got from PubFetcher and need to be mapped to valid bio.tools :ref:`license Enum values <usage_license>` in the second pass (:ref:`pass2`).
 _`license_download`
   Like license_link_, but for licenses from download_ URLs.
 _`license_documentation`
@@ -324,9 +324,9 @@ license
 _`license_biotools`
   Contains the values of the `license attribute`_ (separated by ``" | "``) of the bio.tools entries corresponding to the bio.tools IDs in existing_, that is, if the current entry constructed by Pub2Tools is found to be existing in bio.tools, then the licenses currently in bio.tools are output here to contrast with the value in the column license_.
 _`language_homepage`
-  Contains the value of the `language field <https://github.com/edamontology/pubfetcher/wiki/output#language>`_ of the PubFetcher webpage corresponding to the homepage_ URL. Nothing is output, if the field is empty -- the field can usually be filled when it's a URL of a repository. The language value is output as got from PubFetcher and needs to be mapped to valid bio.tools :ref:`language Enum value(s) <usage_language>` in the second pass (:ref:`pass2`).
+  Contains the value of the `language field <https://pubfetcher.readthedocs.io/en/latest/output.html#language>`_ of the PubFetcher webpage corresponding to the homepage_ URL. Nothing is output, if the field is empty -- the field can usually be filled when it's a URL of a repository. The language value is output as got from PubFetcher and needs to be mapped to valid bio.tools :ref:`language Enum value(s) <usage_language>` in the second pass (:ref:`pass2`).
 _`language_link`
-  Contains the non-empty values (separated by ``" | "``) of the `language fields <https://github.com/edamontology/pubfetcher/wiki/output#language>`_ of the PubFetcher webpages corresponding to the link_ URLs. The URL follows the language value in parenthesis. The language value is output as got from PubFetcher and needs to be mapped to valid bio.tools :ref:`language Enum values <usage_language>` in the second pass (:ref:`pass2`).
+  Contains the non-empty values (separated by ``" | "``) of the `language fields <https://pubfetcher.readthedocs.io/en/latest/output.html#language>`_ of the PubFetcher webpages corresponding to the link_ URLs. The URL follows the language value in parenthesis. The language value is output as got from PubFetcher and needs to be mapped to valid bio.tools :ref:`language Enum values <usage_language>` in the second pass (:ref:`pass2`).
 _`language_download`
   Like language_link_, but for licenses from download_ URLs.
 _`language_documentation`
@@ -340,21 +340,21 @@ language
 _`language_biotools`
   Contains the values of the `language attribute`_ of the bio.tools entries corresponding to the bio.tools IDs in existing_, that is, if the current entry constructed by Pub2Tools is found to be existing in bio.tools, then the languages currently in bio.tools are output here to contrast with the values in the column language_. Languages of a bio.tools entry are separated by ``" ; "`` and languages of different entries are separated by ``" | "``.
 _`oa`
-  ``true``, if the publication is Open Access (according to the PubFetcher's `oa field <https://github.com/edamontology/pubfetcher/wiki/output#oa>`_ of the publication). Values of different publication are separated by ``" | "``. This information is just got as a side effect of fetching publications in :ref:`fetch_pub` and it is not used anywhere in Pub2Tools.
+  ``true``, if the publication is Open Access (according to the PubFetcher's `oa field <https://pubfetcher.readthedocs.io/en/latest/output.html#oa>`_ of the publication). Values of different publication are separated by ``" | "``. This information is just got as a side effect of fetching publications in :ref:`fetch_pub` and it is not used anywhere in Pub2Tools.
 _`journal_title`
-  Journal titles of publications (separated by ``" | "``) as got from the PubFetcher `journalTitle field <https://github.com/edamontology/pubfetcher/wiki/output#journaltitle>`_. Journal titles are used as part of the publication IDs selection process in :ref:`select_pub` and in excluding a few publications from certain journals.
+  Journal titles of publications (separated by ``" | "``) as got from the PubFetcher `journalTitle field <https://pubfetcher.readthedocs.io/en/latest/output.html#journaltitle>`_. Journal titles are used as part of the publication IDs selection process in :ref:`select_pub` and in excluding a few publications from certain journals.
 _`pub_date`
-  Publication dates of publications (separated by ``" | "``) as got from the PubFetcher `pubDateHuman field <https://github.com/edamontology/pubfetcher/wiki/output#pubdatehuman>`_ (the value of the `pubDate field <https://github.com/edamontology/pubfetcher/wiki/output#pubdate>`_ follows in parenthesis). The publication date is the date of first publication, whichever is first, electronic or print publication, which is not the same as the "CREATION_DATE" used in :ref:`select_pub`. Therefore, if Pub2Tools is run for some concrete month (using ``--month``), then not all publications will necessarily have a publication date from that month (it can be from a previous month, but for some upcoming publications also from a future month). Currently, the publication date is used only to calculate citations_count_normalised_.
+  Publication dates of publications (separated by ``" | "``) as got from the PubFetcher `pubDateHuman field <https://pubfetcher.readthedocs.io/en/latest/output.html#pubdatehuman>`_ (the value of the `pubDate field <https://pubfetcher.readthedocs.io/en/latest/output.html#pubdate>`_ follows in parenthesis). The publication date is the date of first publication, whichever is first, electronic or print publication, which is not the same as the "CREATION_DATE" used in :ref:`select_pub`. Therefore, if Pub2Tools is run for some concrete month (using ``--month``), then not all publications will necessarily have a publication date from that month (it can be from a previous month, but for some upcoming publications also from a future month). Currently, the publication date is used only to calculate citations_count_normalised_.
 _`citations_count`
-  Numbers (separated by ``" | "``) showing how many times publications have been cited as got from the PubFetcher `citationsCount field <https://github.com/edamontology/pubfetcher/wiki/output#citationscount>`_. This information is obtained from Europe PMC, which usually has lower numbers than other citation databases. Furthermore, if Pub2Tools is run on recent publications, then the value is usually ``0``, as not enough time has passed for others to cite the articles. The count can be normalised by pub_date_, giving the value in citations_count_normalised_.
+  Numbers (separated by ``" | "``) showing how many times publications have been cited as got from the PubFetcher `citationsCount field <https://pubfetcher.readthedocs.io/en/latest/output.html#citationscount>`_. This information is obtained from Europe PMC, which usually has lower numbers than other citation databases. Furthermore, if Pub2Tools is run on recent publications, then the value is usually ``0``, as not enough time has passed for others to cite the articles. The count can be normalised by pub_date_, giving the value in citations_count_normalised_.
 _`citations_timestamp`
-  The timestamps (separated by ``" | "``) when citations_count_ of publications were last updated as got from the PubFetcher `citationsTimestampHuman field <https://github.com/edamontology/pubfetcher/wiki/output#citationstimestamphuman>`_ (the value of the `citationsTimestamp field <https://github.com/edamontology/pubfetcher/wiki/output#citationstimestamp>`_ follows in parenthesis). Used when calculating citations_count_normalised_.
+  The timestamps (separated by ``" | "``) when citations_count_ of publications were last updated as got from the PubFetcher `citationsTimestampHuman field <https://pubfetcher.readthedocs.io/en/latest/output.html#citationstimestamphuman>`_ (the value of the `citationsTimestamp field <https://pubfetcher.readthedocs.io/en/latest/output.html#citationstimestamp>`_ follows in parenthesis). Used when calculating citations_count_normalised_.
 
   .. _citations_count_normalised:
 citations_count_normalised
   The citations_count_ normalised by pub_date_. The exact formula is ``citations_count / (citations_timestamp - pub_date) * 1000000000``, where the unit of ``citations_timestamp`` and ``pub_date`` is milliseconds (since Unix epoch). Currently, the result is not used anywhere in Pub2Tools, but it might be useful for prioritising or selecting candidates from a large batch of older publications.
 _`corresp_author_name`
-  Names of the corresponding authors of the publications as got from the PubFetcher `correspAuthor field <https://github.com/edamontology/pubfetcher/wiki/output#correspauthor>`_. The names of corresponding authors of a publication are separated by ``" ; "`` and values from different publications are separated by ``" | "``.
+  Names of the corresponding authors of the publications as got from the PubFetcher `correspAuthor field <https://pubfetcher.readthedocs.io/en/latest/output.html#correspauthor>`_. The names of corresponding authors of a publication are separated by ``" ; "`` and values from different publications are separated by ``" | "``.
 _`credit_name_biotools`
   Contains the values of the `credit name attribute <https://biotools.readthedocs.io/en/latest/curators_guide.html#name-credit>`_ of the `credit group <https://biotools.readthedocs.io/en/latest/curators_guide.html#credit-group>`_ of the bio.tools entries corresponding to the bio.tools IDs in existing_, that is, if the current entry constructed by Pub2Tools is found to be existing in bio.tools, then the credit names currently in bio.tools are output here to contrast with the values in the column corresp_author_name_. Values of different credit name attributes of a bio.tools entry are separated by ``" ; "`` and values from different bio.tools entries are separated by ``" | "``.
 _`corresp_author_orcid`
