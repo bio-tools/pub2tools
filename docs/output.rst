@@ -293,6 +293,8 @@ _`tool_title_acronym`
 description
   A list of descriptions (separated by ``" | "``) suggested as the `description attribute`_ of the tool for bio.tools. This is the one column that definitely need curation: a curator can choose one of the descriptions from the list or combine multiple description suggestions into the final description of the tool in bio.tools. More information can be found in the :ref:`description part <usage_description>` of the second pass (:ref:`pass2`), where the descriptions are constructed.
 
+  .. _messages:
+
   In addition to the list of descriptions, a list of messages to the curator (also separated by ``" | "``) are appended to the descriptions (after a ``" | "``). The messages start with ``"> "`` and are uppercase. If there are any messages to the curator, then these should be acknowledged, potentially acted upon and deleted. Messages could be the following:
 
   * NOT INCLUDED! (include_ is ``false``)
@@ -527,6 +529,8 @@ credit[]
     The ORCID iD of a credit.
   typeEntity
     The `entity type <https://biotools.readthedocs.io/en/latest/curators_guide.html#entity-type>`_ of a credit. Always "Person", because currently the only source for credits is the corresponding authors of publications.
+confidence_flag
+  From confidence_, so either "high", "medium", "low" or "very low".
 
 .. note::
   Empty or null values will be omitted from the output.
@@ -572,6 +576,8 @@ As an example, consider the following new entry:
     } ],
     "publication" : [ {
       "doi" : "10.1101/692905"
+    } ],
+    "confidence_flag" : "high"
   }
 
 The example is missing the following fields: ``license``, because license information could not be extracted from the publication abstract and there were also no (usually repository) links where this information could be found; ``credit``, because credit information can currently only be extracted from corresponding authors and corresponding authors are only marked in PubMed Central, but the publication in the example has currently only a DOI; ``download`` and ``documentation``, as none of the links matched to the name of the tool and extracted from the publication abstract and full text are categorised as such.
