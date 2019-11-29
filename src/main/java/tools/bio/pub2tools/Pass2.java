@@ -1849,7 +1849,7 @@ public final class Pass2 {
 			}
 
 			logger.info(mainMarker, "{}Writing {} new bio.tools entries to {}", logPrefix, tools.size(), newPath.toString());
-			org.edamontology.edammap.core.output.Json.outputTrimmedBiotools(newWriter, null, tools);
+			org.edamontology.edammap.core.output.Json.outputBiotools(newWriter, tools);
 		}
 	}
 }
