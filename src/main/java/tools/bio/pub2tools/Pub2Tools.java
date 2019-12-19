@@ -209,7 +209,7 @@ public final class Pub2Tools {
 
 		String pubFile = outputPath.resolve(Common.PUB_FILE).toString();
 		String dbFile = outputPath.resolve(Common.DB_FILE).toString();
-		List<PublicationIds> publicationIdsList = PubFetcher.pubFile(Collections.singletonList(pubFile), Pub2Tools.class.getSimpleName());
+		List<PublicationIds> publicationIdsList = PubFetcher.pubFile(Collections.singletonList(pubFile), Common.PUB_FILE);
 		logger.info(mainMarker, "{}Loaded {} publication IDs from {}", logPrefix, publicationIdsList.size(), pubFile);
 		Set<PublicationIds> publicationIds = new LinkedHashSet<>();
 		publicationIds.addAll(publicationIdsList);
@@ -307,7 +307,7 @@ public final class Pub2Tools {
 
 		int resultsSize;
 		try {
-			resultsSize = Cli.run(cliArgs, version, logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG, true);
+			resultsSize = Cli.run(cliArgs, version, logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG);
 		} finally {
 			Cli.closeDatabase();
 		}

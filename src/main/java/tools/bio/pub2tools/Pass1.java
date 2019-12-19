@@ -1328,7 +1328,7 @@ public final class Pass1 {
 		String pubFile = outputPath.resolve(Common.PUB_FILE).toString();
 		String dbFile = outputPath.resolve(Common.DB_FILE).toString();
 		logger.info(mainMarker, "{}Loading publications from {} for IDs found in {}", logPrefix, dbFile, pubFile);
-		Set<Publication> publications = new LinkedHashSet<>(PubFetcher.getPublications(dbFile, Collections.singletonList(pubFile), Pub2Tools.class.getSimpleName()));
+		Set<Publication> publications = new LinkedHashSet<>(PubFetcher.getPublications(dbFile, Collections.singletonList(pubFile), Common.PUB_FILE));
 
 		Path webPath = PubFetcher.outputPath(outputPath.resolve(Common.WEB_FILE).toString());
 		Path docPath = PubFetcher.outputPath(outputPath.resolve(Common.DOC_FILE).toString());

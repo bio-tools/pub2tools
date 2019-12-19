@@ -19,6 +19,7 @@
 
 package tools.bio.pub2tools;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -61,7 +62,7 @@ public final class Test {
 	static void beforeAfter(String queryIdf, String pubFile, String database, PreProcessor preProcessor) throws IOException {
 		Idf idf = new Idf(queryIdf);
 
-		Set<Publication> publications = new LinkedHashSet<>(PubFetcher.getPublications(database, Collections.singletonList(pubFile), Pub2Tools.class.getSimpleName()));
+		Set<Publication> publications = new LinkedHashSet<>(PubFetcher.getPublications(database, Collections.singletonList(pubFile), new File(pubFile).getName()));
 
 		Map<String, Integer> before = new HashMap<>();
 		Map<String, Integer> after = new HashMap<>();
