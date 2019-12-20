@@ -322,4 +322,5 @@ xpp
 zlib-acknowledgement
 Proprietary
 Other
-Unlicensed
+Not licensed
+Freeware

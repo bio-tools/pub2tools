@@ -283,9 +283,8 @@ public final class Pass2 {
 		}
 		for (Iterator<BiotoolsLink<DocumentationType>> it = documentationLinks.iterator(); it.hasNext(); ) {
 			BiotoolsLink<DocumentationType> documentationLink = it.next();
-			if ((documentationLink.getType() == DocumentationType.MANUAL
+			if ((documentationLink.getType() == DocumentationType.USER_MANUAL
 					|| documentationLink.getType() == DocumentationType.INSTALLATION_INSTRUCTIONS
-					|| documentationLink.getType() == DocumentationType.TUTORIAL
 					|| documentationLink.getType() == DocumentationType.TRAINING_MATERIAL
 					|| documentationLink.getType() == DocumentationType.API_DOCUMENTATION
 					|| documentationLink.getType() == DocumentationType.FAQ)) {

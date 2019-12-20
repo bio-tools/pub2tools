@@ -21,6 +21,7 @@ Haskell
 Icarus
 Java
 JavaScript
+Julia
 JSP
 LabVIEW
 Lisp

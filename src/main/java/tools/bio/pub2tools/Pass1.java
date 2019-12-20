@@ -133,12 +133,10 @@ public final class Pass1 {
 	private static final Pattern BIOTOOLS_SCHEMA_NAME_APOSTROPHE_QUOTATION_SPACE = Pattern.compile("([\\p{L}\\p{N}])['\"\\u0060\\u00B4\\u2018\\u2019\\u02BC\\u201B\\u0091\\u0092\\u00AB\\u00BB\\u201A\\u201C\\u201D\\u201E\\u201F\\u2039\\u203A\\u2E42]+([\\p{L}\\p{N}])");
 	private static final Pattern BIOTOOLS_SCHEMA_PMID_PATTERN = Pattern.compile("^[1-9][0-9]{0,8}$");
 	private static final Pattern BIOTOOLS_SCHEMA_PMCID_PATTERN = Pattern.compile("^(PMC)[1-9][0-9]{0,8}$");
-	// TODO https://github.com/bio-tools/biotoolsSchema/issues/8
 	private static final Pattern BIOTOOLS_SCHEMA_DOI_PATTERN = Pattern.compile("^10\\.[0-9]{4,9}/[\\[\\]<>A-Za-z0-9:;)(_/.-]+$");
 	private static final int BIOTOOLS_SCHEMA_CREDIT_NAME_MIN = 1;
 	private static final int BIOTOOLS_SCHEMA_CREDIT_NAME_MAX = 100;
-	// TODO currently only https allowed (and "." is unescaped)
-	private static final Pattern BIOTOOLS_SCHEMA_CREDIT_ORCIDID_PATTERN = Pattern.compile("^https://orcid.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$");
+	private static final Pattern BIOTOOLS_SCHEMA_CREDIT_ORCIDID_PATTERN = Pattern.compile("^https?://orcid\\.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$");
 	private static final Pattern BIOTOOLS_SCHEMA_CREDIT_EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9_]+([-+.'][A-Za-z0-9_]+)*@[A-Za-z0-9_]+([-.][A-Za-z0-9_]+)*\\.[A-Za-z0-9_]+([-.][A-Za-z0-9_]+)*$");
 
 	private static final Pattern FIX_LINK = Pattern.compile("([.]?[\"(\\[{<>}\\])]+[.]?|\\.\\p{Lu}|--)[\\p{L}\\p{N}'-]+$");

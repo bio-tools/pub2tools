@@ -248,15 +248,14 @@ public final class DescriptionGetter {
 		for (BiotoolsLink<LinkType> linkLink : linkLinks) {
 			if (linkLink.getType() == LinkType.OTHER
 					|| linkLink.getType() == LinkType.REPOSITORY
-					|| linkLink.getType() == LinkType.REGISTRY) {
+					|| linkLink.getType() == LinkType.SOFTWARE_CATALOGUE) {
 				descriptionsFromWebpage(descriptions, linkLink.getUrl(), db, scrape, minLength, name, false, preProcessor);
 			}
 		}
 		for (BiotoolsLink<DocumentationType> documentationLink : documentationLinks) {
 			if (documentationLink.getType() == DocumentationType.GENERAL
-					|| documentationLink.getType() == DocumentationType.MANUAL
+					|| documentationLink.getType() == DocumentationType.USER_MANUAL
 					|| documentationLink.getType() == DocumentationType.INSTALLATION_INSTRUCTIONS
-					|| documentationLink.getType() == DocumentationType.TUTORIAL
 					|| documentationLink.getType() == DocumentationType.TRAINING_MATERIAL
 					|| documentationLink.getType() == DocumentationType.API_DOCUMENTATION
 					|| documentationLink.getType() == DocumentationType.FAQ) {

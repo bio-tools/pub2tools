@@ -84,13 +84,17 @@ public final class Common {
 	private static final Pattern LINK_LIST_ADDR = Pattern.compile("(?i)^(https?://)?(www\\.)?(sourceforge\\.net/+projects/+[^/]+/+lists)([^\\p{L}]|$)");
 	private static final Pattern LINK_LIST_BOTH = Pattern.compile("(?i)(^|[^\\p{L}-])(mailman|listinfo|mailing[-_]?lists?)([^\\p{L}-]|$)");
 	private static final Pattern LINK_FORUM = Pattern.compile("(?i)^(https?://)?(www\\.)?(groups\\.google\\.com|gitter\\.im|sourceforge\\.net/+p/+[^/]+/+discussion)([^\\p{L}]|$)");
-	private static final Pattern LINK_REGISTRY = Pattern.compile("(?i)^(https?://)?(www\\.)?(mybiosoftware\\.com|biocatalogue\\.org)([^\\p{L}]|$)");
+	private static final Pattern LINK_SOFTWARE_CATALOGUE = Pattern.compile("(?i)^(https?://)?(www\\.)?(mybiosoftware\\.com|biocatalogue\\.org)([^\\p{L}]|$)");
 	private static final Pattern LINK_REPOSITORY = Pattern.compile("(?i)^(https?://)?(www\\.)?(bioconductor\\.org|github\\.com|sourceforge\\.net|code\\.google\\.com|cran\\.r-project\\.org|bitbucket\\.org|gitlab\\.com|pypi\\.(python\\.)?org|apps\\.cytoscape\\.org)([^\\p{L}]|$)");
 	private static final Pattern LINK_SOCIAL = Pattern.compile("(?i)^(https?://)?(www\\.)?(twitter\\.com|facebook\\.com)([^\\p{L}]|$)");
 
 	private static final Pattern DOWNLOAD_SRC_CODE = Pattern.compile("(?i)^(https?://)?(www\\.)?(git\\.bioconductor\\.org|github\\.com/+[^/]+/+[^/]+/+tree|sourceforge\\.net/+projects/+[^/]+/+files|code\\.google\\.com/+(archive/+)?p/+[^/]+/+source|bitbucket\\.org/+[^/]+/+[^/]+/+src)([^\\p{L}]|$)");
-	private static final Pattern DOWNLOAD_SRC_PKG = Pattern.compile("(?i)^(https?://)?(www\\.)?(github\\.com/+[^/]+/+[^/]+/+releases|sourceforge\\.net/+projects/+[^/]+/+files/+.+/+download|code\\.google\\.com/+(archive/+)?p/+[^/]+/+downloads|bitbucket\\.org/+[^/]+/+[^/]+/+downloads|apps\\.cytoscape\\.org/+download)([^\\p{L}]|$)");
-	static final Pattern DOWNLOAD_EXT = Pattern.compile("(?i)\\.(gz|zip|bz2|tar|tgz|7z|rar|xz|jar|exe)([^\\p{L}-]|$)");
+	private static final Pattern DOWNLOAD_PKG = Pattern.compile("(?i)^(https?://)?(www\\.)?(github\\.com/+[^/]+/+[^/]+/+releases|sourceforge\\.net/+projects/+[^/]+/+files/+.+/+download|code\\.google\\.com/+(archive/+)?p/+[^/]+/+downloads|bitbucket\\.org/+[^/]+/+[^/]+/+downloads|apps\\.cytoscape\\.org/+download)([^\\p{L}]|$)");
+	private static final String DOWNLOAD_EXT_PKG_STRING = "gz|zip|bz2|tar|tgz|7z|rar|xz";
+	private static final String DOWNLOAD_EXT_BIN_STRING = "jar|exe";
+	private static final Pattern DOWNLOAD_EXT_PKG = Pattern.compile("(?i)\\.(" + DOWNLOAD_EXT_PKG_STRING + ")([^\\p{L}-]|$)");
+	private static final Pattern DOWNLOAD_EXT_BIN = Pattern.compile("(?i)\\.(" + DOWNLOAD_EXT_BIN_STRING + ")([^\\p{L}-]|$)");
+	static final Pattern DOWNLOAD_EXT = Pattern.compile("(?i)\\.(" + DOWNLOAD_EXT_PKG_STRING + "|" + DOWNLOAD_EXT_BIN_STRING + ")([^\\p{L}-]|$)");
 	private static final Pattern DOWNLOAD_FTP = Pattern.compile("(?i)^ftp://");
 	private static final Pattern DOWNLOAD_API = Pattern.compile("(?i)\\.(wsdl)([^\\p{L}-]|$)");
 	private static final Pattern DOWNLOAD_CONTAINER = Pattern.compile("(?i)(^|[^\\p{L}-])(docker)([^\\p{L}-]|$)");
@@ -238,11 +242,11 @@ public final class Common {
 		} else if (DOCUMENTATION_TRAINING.matcher(link).find()) {
 			return new BiotoolsLink<DocumentationType>(link, DocumentationType.TRAINING_MATERIAL);
 		} else if (DOCUMENTATION_TUTORIAL.matcher(link).find()) {
-			return new BiotoolsLink<DocumentationType>(link, DocumentationType.TUTORIAL);
+			return new BiotoolsLink<DocumentationType>(link, DocumentationType.TRAINING_MATERIAL);
 		} else if (DOCUMENTATION_INSTALL.matcher(link).find()) {
 			return new BiotoolsLink<DocumentationType>(link, DocumentationType.INSTALLATION_INSTRUCTIONS);
 		} else if (DOCUMENTATION.matcher(link).find()) {
-			return new BiotoolsLink<DocumentationType>(link, DocumentationType.MANUAL);
+			return new BiotoolsLink<DocumentationType>(link, DocumentationType.USER_MANUAL);
 		} else if (DOCUMENTATION_GENERAL.matcher(link).find()) {
 			return new BiotoolsLink<DocumentationType>(link, DocumentationType.GENERAL);
 		} else if (DOCUMENTATION_CITE.matcher(link).find()) {
@@ -250,7 +254,7 @@ public final class Common {
 		} else if (DOCUMENTATION_TERMS.matcher(link).find()) {
 			return new BiotoolsLink<DocumentationType>(link, DocumentationType.TERMS_OF_USE);
 		} else if (DOCUMENTATION_WIKI.matcher(link).find()) {
-			return new BiotoolsLink<DocumentationType>(link, DocumentationType.MANUAL);
+			return new BiotoolsLink<DocumentationType>(link, DocumentationType.USER_MANUAL);
 		} else {
 			return null;
 		}
@@ -259,27 +263,29 @@ public final class Common {
 	static void makeBiotoolsLinks(List<String> links, List<BiotoolsLink<LinkType>> linkLinks, List<BiotoolsLink<DownloadType>> downloadLinks, List<BiotoolsLink<DocumentationType>> documentationLinks) {
 		for (String link : links) {
 			BiotoolsLink<DocumentationType> documentationLink = null;
-			if (LINK_REGISTRY.matcher(link).find()) {
-				linkLinks.add(new BiotoolsLink<LinkType>(link, LinkType.REGISTRY));
+			if (LINK_SOFTWARE_CATALOGUE.matcher(link).find()) {
+				linkLinks.add(new BiotoolsLink<LinkType>(link, LinkType.SOFTWARE_CATALOGUE));
 			} else if (DOCUMENTATION_EXT.matcher(link).find()) {
 				documentationLink = getDocumentationLink(link);
 				if (documentationLink != null) {
 					documentationLinks.add(documentationLink);
 				} else {
-					documentationLinks.add(new BiotoolsLink<DocumentationType>(link, DocumentationType.MANUAL));
+					documentationLinks.add(new BiotoolsLink<DocumentationType>(link, DocumentationType.USER_MANUAL));
 				}
-			} else if (DOWNLOAD_EXT.matcher(link).find()) {
-				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.BINARY_PACKAGE));
+			} else if (DOWNLOAD_EXT_PKG.matcher(link).find()) {
+				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.SOFTWARE_PACKAGE));
+			} else if (DOWNLOAD_EXT_BIN.matcher(link).find()) {
+				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.BINARIES));
 			} else if (DOWNLOAD_API.matcher(link).find()) {
 				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.API_SPECIFICATION));
 			} else if (DOWNLOAD_CWL.matcher(link).find()) {
-				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.CWL_FILE));
+				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.TOOL_WRAPPER_CWL));
 			} else if (DOWNLOAD_CONTAINER.matcher(link).find()) {
 				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.CONTAINER_FILE));
 			} else if (DOWNLOAD_FTP.matcher(link).find()) {
 				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.BINARIES));
-			} else if (DOWNLOAD_SRC_PKG.matcher(link).find()) {
-				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.SOURCE_PACKAGE));
+			} else if (DOWNLOAD_PKG.matcher(link).find()) {
+				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.SOFTWARE_PACKAGE));
 			} else if (DOWNLOAD_SRC_CODE.matcher(link).find()) {
 				downloadLinks.add(new BiotoolsLink<DownloadType>(link, DownloadType.SOURCE_CODE));
 			} else if ((documentationLink = getDocumentationLink(link)) != null) {
