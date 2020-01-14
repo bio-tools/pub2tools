@@ -270,7 +270,8 @@ public final class DescriptionGetter {
 		}
 		Collections.sort(descriptions);
 		limitDescriptions(descriptions, maxLength, preProcessor);
-		return descriptions.stream().map(d -> d.getDescription()).collect(Collectors.joining(".\n\n"));
+		String description = descriptions.stream().map(d -> d.getDescription()).collect(Collectors.joining(".\n\n"));
+		return !description.isEmpty() ? description + "." : "";
 	}
 
 	static String get(Suggestion2 suggestion, boolean include, boolean homepageBroken, boolean homepageMissing, List<Tool> biotools, Result2 result, String homepage, Set<BiotoolsLink<LinkType>> linkLinks, Set<BiotoolsLink<DocumentationType>> documentationLinks, Set<BiotoolsLink<DownloadType>> downloadLinks, Database db, Scrape scrape, String name, PreProcessor preProcessor) {
@@ -328,7 +329,7 @@ public final class DescriptionGetter {
 		String messagesText = "";
 		boolean messagesMaxLengthReached = false;
 		for (String message : messages) {
-			String messageSep = ".\n\n||| " + message;
+			String messageSep = "\n\n||| " + message;
 			if (messagesText.length() + messageSep.length() <= BIOTOOLS_DESCRIPTION_MESSAGE_MAX_LENGTH && !messagesMaxLengthReached) {
 				messagesText += messageSep;
 			} else {
@@ -349,9 +350,9 @@ public final class DescriptionGetter {
 		if (descriptions.size() <= initialDescriptionsSize) {
 			description = getDescription(descriptions, homepage, linkLinks, documentationLinks, downloadLinks, db, scrape, BIOTOOLS_DESCRIPTION_MINMIN_LENGTH, BIOTOOLS_DESCRIPTION_MAX_LENGTH - messagesText.length(), name, preProcessor);
 		}
-		if (descriptions.size() <= initialDescriptionsSize && description.length() + messagesText.length() + 4 <= BIOTOOLS_DESCRIPTION_MAX_LENGTH) {
+		if (descriptions.size() <= initialDescriptionsSize && description.length() + messagesText.length() + 3 <= BIOTOOLS_DESCRIPTION_MAX_LENGTH) {
 			if (!description.isEmpty()) {
-				description += ".\n\n";
+				description += "\n\n";
 			}
 			List<String> abstractDescriptions = new ArrayList<>();
 			int abstractSentencesLength = 0;

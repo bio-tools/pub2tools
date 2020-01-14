@@ -1150,7 +1150,7 @@ public final class Pass2 {
 			.mapToObj(i -> result.getToolTitlePruned().get(i).equals(result.getToolTitle().get(i)) ? "" : result.getToolTitlePruned().get(i)).collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, String.join(" | ", result.getToolTitleAcronym()));
 
-		writeField(resultsWriter, description);
+		writeField(resultsWriter, description.replaceAll("\n", "\\\\n"));
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(q -> q.getDescription().replaceAll("\n", "\\\\n").replaceAll("\r", "\\\\r").replaceAll("\t", "\\\\t")).collect(Collectors.joining(" | ")));
 
 		writeField(resultsWriter, homepageLicense);
