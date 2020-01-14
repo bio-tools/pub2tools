@@ -553,7 +553,7 @@ The next example executes each individual setup and step command from start to f
   # results/to_biotools.json, with stemming turned off, mapping done in
   # parallel in 8 threads and up to 5 terms output for all EDAM branches
   $ java -jar path/to/pub2tools-<version>.jar -map results \
-  --stemming false --branches topic operation data format --matches 5 \
+  --stemming false --branches topic operation data format \
   --mapper-threads 8
 
 The following example is equivalent with the previous one, just all commands have been replaced with one `-all`_ command:
@@ -565,7 +565,7 @@ The following example is equivalent with the previous one, just all commands hav
   --idf-stemmed path/to/tf.stemmed.idf --month 2019-08 \
   --timeout 30000 --journalsYaml journalsFixes.yaml \
   --webpagesYaml webpagesFixes.yaml --fetcher-threads 16 \
-  --stemming false --branches topic operation data format --matches 5 \
+  --stemming false --branches topic operation data format \
   --mapper-threads 8
 
 All files of the setup can be obtained through some external means and simply copied to the output directory ``results``:
@@ -597,7 +597,7 @@ All files of the setup can be obtained through some external means and simply co
   # 5 EDAM terms are output in the mapping step for the default branches
   # of "topic" and "operation"
   $ java -jar path/to/pub2tools-<version>.jar -resume results \
-  --fetcher-threads 16 --mapper-threads 8 --matches 5
+  --fetcher-threads 16 --mapper-threads 8
 
 The following `-all`_ command is equivalent to the previous list of commands:
 
@@ -607,7 +607,7 @@ The following `-all`_ command is equivalent to the previous list of commands:
   --edam path/to/EDAM.owl --idf path/to/tf.idf --idf-stemmed \
   path/to/tf.stemmed.idf --biotools path/to/biotools.json \
   --pub path/to/pub.txt --db path/to/db.db
-  --fetcher-threads 16 --mapper-threads 8 --matches 5 ^C (Interrupted)
+  --fetcher-threads 16 --mapper-threads 8 ^C (Interrupted)
   # But for some reason, the -all command was interrupted. If this
   # happened during a step command (when all setup was already done),
   # then finishing the run can be done with the -resume command. The
@@ -615,7 +615,7 @@ The following `-all`_ command is equivalent to the previous list of commands:
   # running the remaining steps up to the end. The same step parameters
   # that were supplied to -all must also be supplied to -resume.
   $ java -jar path/to/pub2tools-<version>.jar -resume results \
-  --fetcher-threads 16 --mapper-threads 8 --matches 5
+  --fetcher-threads 16 --mapper-threads 8
 
 When fetching publications and web pages, some resources might be temporarily down. So for slightly better results, one option could be to wait a few days after an initial fetch and hope that a few extra resources would be available then. Due to PubFetcher's logic, publications and web pages that were successfully fetched in full the first time, are not retried during refetching:
 
