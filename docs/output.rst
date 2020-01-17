@@ -580,7 +580,7 @@ As an example, consider the following new entry:
     "confidence_flag" : "high"
   }
 
-The example is missing the following fields: ``license``, because license information could not be extracted from the publication abstract and there were also no (usually repository) links where this information could be found; ``credit``, because credit information can currently only be extracted from corresponding authors and corresponding authors are only marked in PubMed Central, but the publication in the example has currently only a DOI; ``download`` and ``documentation``, as none of the links matched to the name of the tool and extracted from the publication abstract and full text are categorised as such.
+The example is missing the following fields: ``license``, because license information could not be extracted from the publication abstract and there were also no (usually repository) links where this information could be found; ``credit``, because credit information can currently only be extracted from corresponding authors and at the time of running the example extracting corresponding authors from bioRxiv publications was not supported (it is now); ``download`` and ``documentation``, as none of the links matched to the name of the tool and extracted from the publication abstract and full text are categorised as such.
 
 
 .. _performance:
@@ -620,3 +620,6 @@ The name and publication are always filled, because all entries are extracted fr
 
 .. note::
   Pub2Tools sometimes also extracts and writes incorrect information to an attribute (except publication and credit information which is mostly correct), so the percentages presented in the table would be slightly lower if only correctly filled attributes would be taken into account.
+
+.. note::
+  At the time of running these examples, PubFetcher only supported getting credit information from corresponding authors of publications present in PubMed Central (i.e. only for publications that have a PMCID). In January 2020, support was added for getting corresponding author information directly from web pages of articles of many journals (resolved through the publication DOI), so now the credit percentages should be significantly higher.
