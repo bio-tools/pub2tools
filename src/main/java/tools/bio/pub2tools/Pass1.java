@@ -23,6 +23,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
@@ -67,6 +69,9 @@ import org.edamontology.edammap.core.preprocessing.PreProcessor;
 public final class Pass1 {
 
 	private static final Logger logger = LogManager.getLogger();
+
+	private static final int ABSTRACT_MAX_LENGTH = 5000;
+	private static final int FULLTEXT_MAX_LENGTH = 200000;
 
 	private static final Pattern TOOL_TITLE_INVALID = Pattern.compile("(?i)^(correction|erratum)( to)?$");
 	private static final Pattern TOOL_TITLE_SEPARATOR = Pattern.compile("(?i),? (and|&) ");
@@ -138,6 +143,9 @@ public final class Pass1 {
 	private static final int BIOTOOLS_SCHEMA_CREDIT_NAME_MAX = 100;
 	private static final Pattern BIOTOOLS_SCHEMA_CREDIT_ORCIDID_PATTERN = Pattern.compile("^https?://orcid\\.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$");
 	private static final Pattern BIOTOOLS_SCHEMA_CREDIT_EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9_]+([-+.'][A-Za-z0-9_]+)*@[A-Za-z0-9_]+([-.][A-Za-z0-9_]+)*\\.[A-Za-z0-9_]+([-.][A-Za-z0-9_]+)*$");
+
+	private static final String LEFTOVER_AVAILABLE = "(available|availability|accessible|accessed)";
+	private static final Pattern LEFTOVER_EXCLUDE = Pattern.compile("(?i)(dataset|(^|[^\\p{L}-])data([^\\p{L}-]|$)|doi\\.org/10\\.(5061|21227|17632|7910|7946|15468))");
 
 	private static final Pattern FIX_LINK = Pattern.compile("([.]?[\"(\\[{<>}\\])]+[.]?|\\.\\p{Lu}|--)[\\p{L}\\p{N}'-]+$");
 	private static final Pattern FIX_LINK_KEEP1 = Pattern.compile("(\\.[\\p{Ll}\\p{N}]+)\\p{Lu}[\\p{L}\\p{N}'-]*$");
@@ -1290,6 +1298,43 @@ public final class Pass1 {
 			result.getLeftoverLinksAbstract().remove(it.next().intValue());
 		}
 
+		leftoverLinksAbstractRemove = new TreeSet<>();
+		for (Suggestion1 suggestion : result.getSuggestions()) {
+			String abstractWithoutSuggestionLinks = theAbstract;
+			for (String suggestionLink : suggestion.getLinksAbstract()) {
+				String suggestionLinkTrimmed = Common.LINK_COMPARE_END.matcher(Common.LINK_COMPARE_START.matcher(suggestionLink).replaceFirst(".")).replaceFirst("");
+				String pattern = "(?i)";
+				for (int i = 0; i < suggestionLinkTrimmed.length(); ++i) {
+					String letter = suggestionLinkTrimmed.substring(i, i + 1);
+					pattern += (Common.USE_IN_PATTERN.matcher(letter).matches() ? letter : ".");
+				}
+				abstractWithoutSuggestionLinks = Pattern.compile(pattern).matcher(abstractWithoutSuggestionLinks).replaceAll("");
+			}
+			for (int i = 0; i < result.getLeftoverLinksAbstract().size(); ++i) {
+				String leftoverLink = result.getLeftoverLinksAbstract().get(i);
+				if (LEFTOVER_EXCLUDE.matcher(leftoverLink).find()) {
+					continue;
+				}
+				try {
+					String host = new URL(Common.prependHttp(leftoverLink)).getHost();
+					String hostPattern = "";
+					for (int j = 0; j < host.length(); ++j) {
+						String letter = host.substring(j, j + 1);
+						hostPattern += (Common.USE_IN_PATTERN.matcher(letter).matches() ? letter : ".");
+					}
+					if (Pattern.compile("(?i)" + LEFTOVER_AVAILABLE + "[^.?]*[^ ]*" + hostPattern).matcher(abstractWithoutSuggestionLinks).find() ||
+							Pattern.compile("(?i)" + hostPattern + "[^ ]*[^.?]*" + LEFTOVER_AVAILABLE).matcher(abstractWithoutSuggestionLinks).find()) {
+						suggestion.addLinkAbstract(leftoverLink);
+						leftoverLinksAbstractRemove.add(i);
+					}
+				} catch (MalformedURLException e) {
+				}
+			}
+		}
+		for (Iterator<Integer> it = leftoverLinksAbstractRemove.descendingIterator(); it.hasNext(); ) {
+			result.getLeftoverLinksAbstract().remove(it.next().intValue());
+		}
+
 		for (Suggestion1 suggestion : result.getSuggestions()) {
 			makeFixLinks(suggestion.getLinksAbstract());
 			makeFixLinks(suggestion.getLinksFulltext());
@@ -1357,6 +1402,15 @@ public final class Pass1 {
 			for (Publication publication : publications) {
 				++publicationIndex;
 				System.err.print(PubFetcher.progress(publicationIndex, publications.size(), start) + "  \r");
+
+				if (publication.getAbstract().getSize() > ABSTRACT_MAX_LENGTH) {
+					logger.info("Skipping publication {}, as length of abstract ({}) is larger than allowed ({})", publication.toStringId(), publication.getAbstract().getSize(), ABSTRACT_MAX_LENGTH);
+					continue;
+				}
+				if (publication.getFulltext().getSize() > FULLTEXT_MAX_LENGTH) {
+					logger.info("Skipping publication {}, as length of fulltext ({}) is larger than allowed ({})", publication.toStringId(), publication.getFulltext().getSize(), FULLTEXT_MAX_LENGTH);
+					continue;
+				}
 
 				List<String> toolTitleExtractedOriginal = new ArrayList<>();
 				List<String> toolTitle = new ArrayList<>();

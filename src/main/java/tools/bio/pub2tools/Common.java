@@ -56,7 +56,7 @@ public final class Common {
 	static final Pattern KNOWN_SCHEMA_START = Pattern.compile("(?i)^(http|https|ftp)://");
 
 	static final Pattern LINK_COMPARE_START = Pattern.compile("(?i)^((http|https|ftp)://)?(www\\.)?");
-	private static final Pattern LINK_COMPARE_END = Pattern.compile("/+$");
+	static final Pattern LINK_COMPARE_END = Pattern.compile("/+$");
 	private static final Pattern LINK_COMPARE_INDEX = Pattern.compile("/+index\\.[\\p{L}\\p{N}]+$");
 	static final Pattern LINK_COMPARE_REST = Pattern.compile("^(\\p{Ll}\\p{Lu}|./*[.]?[\"(\\[{<>}\\])]+[.]?|.\\.\\p{Lu}[\\p{L}\\p{N}'-]|//*\\.|./+\\.|./*--|./*[^/]+@[^/]+\\.[^/]+)[\\p{L}\\p{N}'-]*$");
 	static final Pattern LINK_COMPARE_SCHEMA = Pattern.compile("(http|https|ftp)://");

@@ -117,7 +117,7 @@ public final class Pass2 {
 
 	private static final Pattern TOOL_TITLE_NOT_ALPHANUM = Pattern.compile("[^\\p{L}\\p{N}]");
 
-	private static final Pattern HOMEPAGE_EXCLUDE = Pattern.compile("(?i)^(https?://)?(www\\.)?(clinicaltrials\\.gov|osf\\.io|annualreviews\\.org|w3\\.org|creativecommons\\.org)([^\\p{L}]|$)");
+	private static final Pattern HOMEPAGE_EXCLUDE = Pattern.compile("(?i)^(https?://)?(www\\.)?(clinicaltrials\\.gov|osf\\.io|annualreviews\\.org|w3\\.org|creativecommons\\.org|data\\.mendeley\\.com)([^\\p{L}]|$)");
 	private static final Pattern JOURNAL_EXCLUDE = Pattern.compile("(?i)^(Systematic reviews|The Cochrane Database of Systematic Reviews|Annual review of .*)$");
 
 	private static final String[] RESULTS_HEADER = new String[] { "pmid", "pmcid", "doi", "same_suggestions",
