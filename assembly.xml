@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright © 2020 Erik Jaaniso
+
+   This file is part of Pub2Tools.
+
+   Pub2Tools is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   Pub2Tools is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with Pub2Tools.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+
+  <id>assembly</id>
+
+  <formats>
+    <format>zip</format>
+  </formats>
+
+  <files>
+    <file>
+      <source>target/pub2tools-${pub2tools.version}.jar</source>
+      <outputDirectory>${file.separator}</outputDirectory>
+    </file>
+  </files>
+
+  <fileSets>
+    <fileSet>
+      <directory>.</directory>
+      <outputDirectory>src</outputDirectory>
+      <excludes>
+        <exclude>*/_build/**</exclude>
+        <exclude>target/**</exclude>
+        <exclude>.*/**</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>target/lib/src</directory>
+      <outputDirectory>src/lib</outputDirectory>
+    </fileSet>
+  </fileSets>
+
+  <dependencySets>
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <outputDirectory>lib</outputDirectory>
+      <unpack>false</unpack>
+    </dependencySet>
+  </dependencySets>
+</assembly>

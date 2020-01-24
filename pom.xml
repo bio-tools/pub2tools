@@ -30,12 +30,33 @@
   <url>https://github.com/bio-tools/pub2tools</url>
   <description>A utility constructing bio.tools entries from publications</description>
 
+  <licenses>
+    <license>
+      <name>GPL-3.0-or-later</name>
+      <url>https://www.gnu.org/licenses/gpl-3.0-standalone.html</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Erik Jaaniso</name>
+      <email>egj@gmx.fr</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/bio-tools/pub2tools.git</connection>
+    <developerConnection>scm:git:ssh://github.com/bio-tools/pub2tools.git</developerConnection>
+    <url>https://github.com/bio-tools/pub2tools/tree/master</url>
+  </scm>
+
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <pubfetcher.version>0.2-SNAPSHOT</pubfetcher.version>
     <edammap.version>0.2-SNAPSHOT</edammap.version>
+    <pub2tools.version>0.2-SNAPSHOT</pub2tools.version>
     <maven.enforcer.version>3.0.0-M3</maven.enforcer.version>
     <maven.compiler.version>3.8.1</maven.compiler.version>
     <maven.jar.version>3.2.0</maven.jar.version>
@@ -47,6 +68,7 @@
     <maven.install.version>3.0.0-M1</maven.install.version>
     <maven.deploy.version>3.0.0-M1</maven.deploy.version>
     <maven.site.version>3.8.2</maven.site.version>
+    <maven.assembly.version>3.2.0</maven.assembly.version>
     <log4j.version>2.13.0</log4j.version>
     <slf4j.version>1.7.30</slf4j.version>
     <jcommander.version>1.78</jcommander.version>
@@ -102,6 +124,7 @@
   </dependencies>
 
   <build>
+    <finalName>pub2tools-${pub2tools.version}</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -201,6 +224,26 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven.assembly.version}</version>
+        <executions>
+          <execution>
+            <id>assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>assembly.xml</descriptor>
+              </descriptors>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
@@ -217,6 +260,19 @@
               </goals>
               <configuration>
                 <outputDirectory>${project.basedir}/target/lib</outputDirectory>
+                <excludeGroupIds>tools.bio.pub2tools</excludeGroupIds>
+              </configuration>
+            </execution>
+            <execution>
+              <id>copy-src-dependencies</id>
+              <phase>package</phase>
+              <goals>
+                <goal>copy-dependencies</goal>
+              </goals>
+              <configuration>
+                <classifier>sources</classifier>
+                <failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+                <outputDirectory>${project.basedir}/target/lib/src</outputDirectory>
                 <excludeGroupIds>tools.bio.pub2tools</excludeGroupIds>
               </configuration>
             </execution>
