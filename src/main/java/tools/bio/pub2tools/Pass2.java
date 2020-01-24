@@ -115,9 +115,9 @@ public final class Pass2 {
 
 	private static final int NAME_WORD_MATCH_LIMIT = 5;
 
-	private static final Pattern TOOL_TITLE_NOT_ALPHANUM = Pattern.compile("[^\\p{L}\\p{N}]");
+	private static final Pattern NOT_ALPHANUM = Pattern.compile("[^\\p{L}\\p{N}]");
 
-	private static final Pattern HOMEPAGE_EXCLUDE = Pattern.compile("(?i)^(https?://)?(www\\.)?(clinicaltrials\\.gov|osf\\.io|annualreviews\\.org|w3\\.org|creativecommons\\.org|data\\.mendeley\\.com)([^\\p{L}]|$)");
+	private static final Pattern HOMEPAGE_EXCLUDE = Pattern.compile("(?i)^(https?://)?(www\\.)?(clinicaltrials\\.gov|osf\\.io|annualreviews\\.org|w3\\.org|creativecommons\\.org|data\\.mendeley\\.com|ncbi\\.nlm\\.nih\\.gov/.+=GSE[0-9]+)([^\\p{L}]|$)");
 	private static final Pattern JOURNAL_EXCLUDE = Pattern.compile("(?i)^(Systematic reviews|The Cochrane Database of Systematic Reviews|Annual review of .*)$");
 
 	private static final String[] RESULTS_HEADER = new String[] { "pmid", "pmcid", "doi", "same_suggestions",
@@ -429,7 +429,7 @@ public final class Pass2 {
 		List<String> toolTitleOthers = new ArrayList<>();
 		for (List<String> toolTitleOther : result.getToolTitleOthers()) {
 			for (String other : toolTitleOther) {
-				for (String otherPart : TOOL_TITLE_NOT_ALPHANUM.split(other)) {
+				for (String otherPart : NOT_ALPHANUM.split(other)) {
 					otherPart = Common.TOOL_TITLE_TRIM.matcher(String.join("", preProcessor.process(otherPart))).replaceFirst("");
 					if (otherPart.length() > 1) {
 						toolTitleOthers.add(otherPart);
@@ -1663,9 +1663,11 @@ public final class Pass2 {
 
 					if (i == 0) {
 						String suggestionProcessed = Common.BIOTOOLS_PROCESSED_VERSION_TRIM.matcher(result.getSuggestions().get(i).getProcessed()).replaceFirst("");
+						String suggestionProcessedCompare = NOT_ALPHANUM.matcher(suggestionProcessed).replaceAll("");
 						if (!suggestionProcessed.isEmpty()) {
 							for (int j = 0; j < queryNamesProcessed.size(); ++j) {
-								if (suggestionProcessed.equals(queryNamesProcessed.get(j))) {
+								String biotoolsIdCompare = NOT_ALPHANUM.matcher(Common.BIOTOOLS_PROCESSED_VERSION_TRIM.matcher(biotools.get(j).getBiotoolsID().toLowerCase(Locale.ROOT)).replaceFirst("")).replaceAll("");
+								if (suggestionProcessed.equals(queryNamesProcessed.get(j)) || suggestionProcessedCompare.equals(biotoolsIdCompare)) {
 									if ((publicationAndNameExisting == null || !publicationAndNameExisting.contains(j))
 											&& (nameExistingSomePublicationDifferent == null || !nameExistingSomePublicationDifferent.contains(j))
 											&& (somePublicationExistingNameDifferent == null || !somePublicationExistingNameDifferent.contains(j))

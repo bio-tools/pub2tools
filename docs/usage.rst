@@ -326,8 +326,8 @@ Find existing bio.tools entries
   An entry is determined to be **existing in bio.tools** in the following cases:
 
   * Some `publication IDs`_ of the new entry are matching some publication IDs of an entry in bio.tools.
-  * The name of the entry is equal or matching (ignoring version, capitalisation, symbols, etc) a name of an entry in bio.tools and some link from that entry is matching (ignoring lowest subdomain and last path) any link from that bio.tools entry. As additional requirement in this case, the confidence_ must not be "very low" and the `final decision`_ about inclusion must be positive.
-  * The name of the entry is matching a name of an entry in bio.tools and also matching a credit_ (through the name, ORCID iD or e-mail) with that bio.tools entry. The confidence_ must not be "very low" and the `final decision`_ about inclusion must be positive.
+  * The name of the entry is equal or matching (ignoring version, capitalisation, symbols, etc) a name or ID of an entry in bio.tools and some link from that entry is matching (ignoring lowest subdomain and last path) any link from that bio.tools entry. As additional requirement in this case, the confidence_ must not be "very low" and the `final decision`_ about inclusion must be positive.
+  * The name of the entry is matching a name or ID of an entry in bio.tools and also matching a credit_ (through the name, ORCID iD or e-mail) with that bio.tools entry. The confidence_ must not be "very low" and the `final decision`_ about inclusion must be positive.
 
   .. _divide_links:
 Divide links
