@@ -99,6 +99,15 @@ public class Pub2ToolsArgs extends BasicArgs {
 	@Parameter(names = { "--day" }, description = "One day (in the form 2019-08-23) for which publication IDs should be fetched from with -select-pub (or -all)")
 	String day = null;
 
+	@Parameter(names = { "--disable-tool-restriction" }, description = "If specified, using phrase combinations to narrow down publication IDs to only those potentially about tools is not done with -select-pub (or -all)")
+	boolean disableToolRestriction = false;
+
+	@Parameter(names = { "--custom-restriction" }, description = "Additional restrictions for publication IDs to be fetched with -select-pub (or -all), specified using the Europe PMC search syntax (https://europepmc.org/searchsyntax)")
+	String customRestriction = null;
+
+	@Parameter(names = { "--disable-exclusions" }, description = "If specified, some further restrictions to eliminate a few wrong publication IDs are not used with -select-pub (or -all)")
+	boolean disableExclusions = false;
+
 	@Parameter(names = { "--pub", "--pub-ids", "--pub-file" }, description = "The file containing publication IDs to be copied to the output directory with -copy-pub (or -all)")
 	String pub = null;
 

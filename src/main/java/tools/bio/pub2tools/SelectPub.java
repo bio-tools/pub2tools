@@ -1,5 +1,5 @@
 /*
- * Copyright © 2019 Erik Jaaniso
+ * Copyright © 2019, 2020 Erik Jaaniso
  *
  * This file is part of Pub2Tools.
  *
@@ -49,7 +49,7 @@ public class SelectPub {
 
 	private static final Logger logger = LogManager.getLogger();
 
-	private static Map<String, String> getQuery(String resultType, String cursorMark, String search, String source, String date, String not, FetcherArgs fetcherArgs) throws URISyntaxException {
+	private static Map<String, String> getQuery(String resultType, String cursorMark, String date, String source, String search, String custom, String not, FetcherArgs fetcherArgs) throws URISyntaxException {
 		Map<String, String> query = new LinkedHashMap<>();
 		query.put("resultType", resultType);
 		query.put("cursorMark", cursorMark);
@@ -60,15 +60,11 @@ public class SelectPub {
 		if (email != null && !email.isEmpty()) {
 			query.put("email", email);
 		}
-		if (source != null) {
-			query.put("query", search + " AND " + source + " AND " + date + " AND " + not);
-		} else {
-			query.put("query", search + " AND " + date + " AND " + not);
-		}
+		query.put("query", date + (source != null ? " AND " + source : "") + (search != null ? " AND " + search : "") + (custom != null ? " AND " + custom : "") + (not != null ? " AND " + not : ""));
 		return query;
 	}
 
-	private static List<PublicationIds> getIds(String type, String resultType, String search, String source, String date, String not, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
+	private static List<PublicationIds> getIds(String type, String resultType, String date, String source, String search, String custom, String not, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
 		Marker mainMarker = MarkerManager.getMarker(Pub2Tools.MAIN_MARKER);
 
 		List<PublicationIds> ids = new ArrayList<>();
@@ -81,7 +77,7 @@ public class SelectPub {
 		long start = System.currentTimeMillis();
 
 		Fetcher fetcher = new Fetcher(fetcherArgs.getPrivateArgs());
-		Map<String, String> query = getQuery(resultType, cursorMark, search, source, date, not, fetcherArgs);
+		Map<String, String> query = getQuery(resultType, cursorMark, date, source, search, custom, not, fetcherArgs);
 		Document doc = fetcher.postDoc("https://www.ebi.ac.uk/europepmc/webservices/rest/searchPOST", query, fetcherArgs);
 		if (doc == null) {
 			throw new RuntimeException("No Document returned for query " + query);
@@ -126,7 +122,7 @@ public class SelectPub {
 					++pageIndex;
 					System.err.print(PubFetcher.progress(pageIndex, (expectedSize - 1) / 1000 + 1, start) + "  \r");
 
-					query = getQuery(resultType, cursorMark, search, source, date, not, fetcherArgs);
+					query = getQuery(resultType, cursorMark, date, source, search, custom, not, fetcherArgs);
 					doc = fetcher.postDoc("https://www.ebi.ac.uk/europepmc/webservices/rest/searchPOST", query, fetcherArgs);
 				}
 			} else {
@@ -143,7 +139,11 @@ public class SelectPub {
 			logger.error(mainMarker, "{}No Document returned for query {}", logPrefix, query);
 		}
 		if (resultSize < expectedSize) {
-			throw new RuntimeException("Less results have been returned (" + resultSize + ") than expected (" + expectedSize + ") for query " + query);
+			if (resultSize > 0) {
+				logger.error(mainMarker, "{}Less results have been returned ({}) than expected ({}) in {}", logPrefix, resultSize, expectedSize, doc.location());
+			} else {
+				throw new RuntimeException("Less results have been returned (" + resultSize + ") than expected (" + expectedSize + ") for query " + query);
+			}
 		}
 
 		return ids;
@@ -192,7 +192,7 @@ public class SelectPub {
 		}
 	}
 
-	private static Set<PublicationIds> abstractQuery(String resultType, String source, String date, String not, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
+	private static Set<PublicationIds> abstractQuery(String resultType, String date, String source, String custom, String not, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
 		Marker mainMarker = MarkerManager.getMarker(Pub2Tools.MAIN_MARKER);
 		logger.info(mainMarker, "{}Running abstract query for source {} and date {}", logPrefix, source, date);
 
@@ -207,29 +207,29 @@ public class SelectPub {
 		List<String> toolsGood = PubFetcher.getResource(SelectPub.class, "select/tool_good.txt");
 		List<String> tools = PubFetcher.getResource(SelectPub.class, "select/tool.txt");
 
-		List<PublicationIds> excellentIds = getIds("excellent", resultType, excellent, source, date, not, fetcherArgs, logPrefix);
-		List<PublicationIds> goodHttpIds = getIds("good + http", resultType, good + " AND " + http, source, date, not, fetcherArgs, logPrefix);
-		List<PublicationIds> goodToolGoodIds = getIds("good + tool_good", resultType, good + " AND " + toolGood, source, date, not, fetcherArgs, logPrefix);
-		List<PublicationIds> mediocre1HttpToolIds = getIds("mediocre1 + http + tool", resultType, mediocre1 + " AND " + http + " AND " + tool, source, date, not, fetcherArgs, logPrefix);
-		List<PublicationIds> mediocre2HttpToolIds = getIds("mediocre2 + http + tool", resultType, mediocre2 + " AND " + http + " AND " + tool, source, date, not, fetcherArgs, logPrefix);
-		List<PublicationIds> mediocre1ToolGoodToolIds = getIds("mediocre1 + tool_good + tool", resultType, mediocre1 + " AND " + toolGood + " AND " + tool, source, date, not, fetcherArgs, logPrefix);
-		List<PublicationIds> mediocre2ToolGoodToolIds = getIds("mediocre2 + tool_good + tool", resultType, mediocre2 + " AND " + toolGood + " AND " + tool, source, date, not, fetcherArgs, logPrefix);
-		List<PublicationIds> httpToolGoodIds = getIds("http + tool_good", resultType, http + " AND " + toolGood, source, date, not, fetcherArgs, logPrefix);
+		List<PublicationIds> excellentIds = getIds("excellent", resultType, date, source, excellent, custom, not, fetcherArgs, logPrefix);
+		List<PublicationIds> goodHttpIds = getIds("good + http", resultType, date, source, good + " AND " + http, custom, not, fetcherArgs, logPrefix);
+		List<PublicationIds> goodToolGoodIds = getIds("good + tool_good", resultType, date, source, good + " AND " + toolGood, custom, not, fetcherArgs, logPrefix);
+		List<PublicationIds> mediocre1HttpToolIds = getIds("mediocre1 + http + tool", resultType, date, source, mediocre1 + " AND " + http + " AND " + tool, custom, not, fetcherArgs, logPrefix);
+		List<PublicationIds> mediocre2HttpToolIds = getIds("mediocre2 + http + tool", resultType, date, source, mediocre2 + " AND " + http + " AND " + tool, custom, not, fetcherArgs, logPrefix);
+		List<PublicationIds> mediocre1ToolGoodToolIds = getIds("mediocre1 + tool_good + tool", resultType, date, source, mediocre1 + " AND " + toolGood + " AND " + tool, custom, not, fetcherArgs, logPrefix);
+		List<PublicationIds> mediocre2ToolGoodToolIds = getIds("mediocre2 + tool_good + tool", resultType, date, source, mediocre2 + " AND " + toolGood + " AND " + tool, custom, not, fetcherArgs, logPrefix);
+		List<PublicationIds> httpToolGoodIds = getIds("http + tool_good", resultType, date, source, http + " AND " + toolGood, custom, not, fetcherArgs, logPrefix);
 
 		List<List<PublicationIds>> toolGoodIds = new ArrayList<>();
 		for (String t : toolsGood) {
-			toolGoodIds.add(getIds("\"" + t + "\"", resultType, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", source, date, not, fetcherArgs, logPrefix));
+			toolGoodIds.add(getIds("\"" + t + "\"", resultType, date, source, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", custom, not, fetcherArgs, logPrefix));
 		}
 		List<List<PublicationIds>> toolIds = new ArrayList<>();
 		for (String t : tools) {
-			toolIds.add(getIds("\"" + t + "\"", resultType, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", source, date, not, fetcherArgs, logPrefix));
+			toolIds.add(getIds("\"" + t + "\"", resultType, date, source, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", custom, not, fetcherArgs, logPrefix));
 		}
 
-		List<PublicationIds> goodIds = getIds("good", resultType, good, source, date, not, fetcherArgs, logPrefix);
+		List<PublicationIds> goodIds = getIds("good", resultType, date, source, good, custom, not, fetcherArgs, logPrefix);
 		Set<PublicationIds> mediocreIds = new LinkedHashSet<>();
-		mediocreIds.addAll(getIds("mediocre1", resultType, mediocre1, source, date, not, fetcherArgs, logPrefix));
-		mediocreIds.addAll(getIds("mediocre2", resultType, mediocre2, source, date, not, fetcherArgs, logPrefix));
-		List<PublicationIds> httpIds = getIds("http", resultType, http, source, date, not, fetcherArgs, logPrefix);
+		mediocreIds.addAll(getIds("mediocre1", resultType, date, source, mediocre1, custom, not, fetcherArgs, logPrefix));
+		mediocreIds.addAll(getIds("mediocre2", resultType, date, source, mediocre2, custom, not, fetcherArgs, logPrefix));
+		List<PublicationIds> httpIds = getIds("http", resultType, date, source, http, custom, not, fetcherArgs, logPrefix);
 
 		logger.info(mainMarker, "{}Getting results for good + tool + tool", logPrefix);
 		List<PublicationIds> goodToolToolIds = new ArrayList<>();
@@ -362,27 +362,42 @@ public class SelectPub {
 		return "CREATION_DATE:" + dayDate.toString();
 	}
 
-	public static Set<PublicationIds> select(String date, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
+	public static Set<PublicationIds> select(String date, boolean disableTool, String custom, boolean disableNot, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
 		Marker mainMarker = MarkerManager.getMarker(Pub2Tools.MAIN_MARKER);
 
-		List<String> notAbstract = PubFetcher.getResource(SelectPub.class, "select/not_abstract.txt");
-		List<String> notTitle = PubFetcher.getResource(SelectPub.class, "select/not_title.txt");
-		String not = "(NOT " + notAbstract.stream().map(n -> "ABSTRACT:\"" + n + "\"").collect(Collectors.joining(" NOT "));
-		not += " NOT " + notTitle.stream().map(n -> "TITLE:\"" + n + "\"").collect(Collectors.joining(" NOT ")) + ")";
+		if (custom != null) {
+			logger.info(mainMarker, "{}Using custom restriction for all queries: {}", logPrefix, custom);
+			custom = "(" + custom + ")";
+		}
 
-		logger.info(mainMarker, "{}Running journal list query for date {}", logPrefix, date);
-		List<String> journalList = PubFetcher.getResource(SelectPub.class, "select/journal.txt");
-		String journalSearch = "(" + journalList.stream().map(j -> "JOURNAL:\"" + j + "\"").collect(Collectors.joining(" OR ")) + ")";
-		List<PublicationIds> idsJournal = getIds("journal list", "idlist", journalSearch, null, date, not, fetcherArgs, logPrefix);
-		logger.info(mainMarker, "{}Journal list query for date {} returned {} results", logPrefix, date, idsJournal.size());
-
-		Set<PublicationIds> idsMed = abstractQuery("idlist", "(SRC:MED OR SRC:PMC)", date, not, fetcherArgs, logPrefix);
-		Set<PublicationIds> idsPpr = abstractQuery("lite", "(SRC:PPR)", date, not, fetcherArgs, logPrefix);
+		String not = null;
+		if (!disableNot) {
+			List<String> notAbstract = PubFetcher.getResource(SelectPub.class, "select/not_abstract.txt");
+			List<String> notTitle = PubFetcher.getResource(SelectPub.class, "select/not_title.txt");
+			not = "(NOT " + notAbstract.stream().map(n -> "ABSTRACT:\"" + n + "\"").collect(Collectors.joining(" NOT "));
+			not += " NOT " + notTitle.stream().map(n -> "TITLE:\"" + n + "\"").collect(Collectors.joining(" NOT ")) + ")";
+		} else {
+			logger.info(mainMarker, "{}Exclusion usage of not_abstract.txt and not_title.txt disabled", logPrefix, custom);
+		}
 
 		Set<PublicationIds> ids = new LinkedHashSet<>();
-		ids.addAll(idsJournal);
-		ids.addAll(idsMed);
-		ids.addAll(idsPpr);
+
+		if (!disableTool) {
+			logger.info(mainMarker, "{}Running journal list query for date {}", logPrefix, date);
+			List<String> journalList = PubFetcher.getResource(SelectPub.class, "select/journal.txt");
+			String journalSearch = "(" + journalList.stream().map(j -> "JOURNAL:\"" + j + "\"").collect(Collectors.joining(" OR ")) + ")";
+			List<PublicationIds> idsJournal = getIds("journal list", "idlist", date, null, journalSearch, custom, not, fetcherArgs, logPrefix);
+			logger.info(mainMarker, "{}Journal list query for date {} returned {} results", logPrefix, date, idsJournal.size());
+			ids.addAll(idsJournal);
+		}
+
+		if (disableTool) {
+			ids.addAll(getIds("unrestricted (to tools) from (SRC:MED OR SRC:PMC)", "idlist", date, "(SRC:MED OR SRC:PMC)", null, custom, not, fetcherArgs, logPrefix));
+			ids.addAll(getIds("unrestricted (to tools) from (SRC:PPR)", "lite", date, "(SRC:PPR)", null, custom, not, fetcherArgs, logPrefix));
+		} else {
+			ids.addAll(abstractQuery("idlist", date, "(SRC:MED OR SRC:PMC)", custom, not, fetcherArgs, logPrefix));
+			ids.addAll(abstractQuery("lite", date, "(SRC:PPR)", custom, not, fetcherArgs, logPrefix));
+		}
 
 		return ids;
 	}

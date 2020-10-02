@@ -168,13 +168,13 @@ public final class Pub2Tools {
 		copy(biotools, biotoolsTo, fetcherArgs);
 	}
 
-	private static void selectPub(Path outputPath, String date, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
+	private static void selectPub(Path outputPath, String date, boolean disableTool, String custom, boolean disableNot, FetcherArgs fetcherArgs, String logPrefix) throws IOException, ParseException, URISyntaxException {
 		Marker mainMarker = MarkerManager.getMarker(MAIN_MARKER);
 		Path pubPath = outputPath.resolve(Common.PUB_FILE);
 		logger.info(mainMarker, "{}Select publication IDs from Europe PMC for date {}", logPrefix, date);
 		try (BufferedWriter bw = Files.newBufferedWriter(pubPath, StandardCharsets.UTF_8)) {
 			List<PublicationIds> ids = new ArrayList<>();
-			ids.addAll(SelectPub.select(date, fetcherArgs, logPrefix));
+			ids.addAll(SelectPub.select(date, disableTool, custom, disableNot, fetcherArgs, logPrefix));
 			Collections.shuffle(ids);
 			for (PublicationIds id : ids) {
 				bw.write(id.toString(true));
@@ -414,7 +414,7 @@ public final class Pub2Tools {
 		if (args.selectPub != null) {
 			String date = SelectPub.getDate(args.from, args.to, args.month, args.day, " for -select-pub");
 			checkStepNone(outputPath);
-			selectPub(outputPath, date, args.fetcherArgs, "");
+			selectPub(outputPath, date, args.disableToolRestriction, args.customRestriction, args.disableExclusions, args.fetcherArgs, "");
 		}
 
 		if (args.copyPub != null && requiredArgs(new String[] { "pub" }, "copyPub", args)) {
@@ -511,7 +511,7 @@ public final class Pub2Tools {
 			if (args.pub != null) {
 				copyPub(outputPath, args.pub, args.fetcherArgs, "0/5 ");
 			} else {
-				selectPub(outputPath, date, args.fetcherArgs, "0/5 ");
+				selectPub(outputPath, date, args.disableToolRestriction, args.customRestriction, args.disableExclusions, args.fetcherArgs, "0/5 ");
 			}
 			if (args.db != null) {
 				copyDb(outputPath, args.db, args.fetcherArgs, "0/5 ");
