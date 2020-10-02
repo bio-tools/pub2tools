@@ -70,8 +70,8 @@ import org.edamontology.edammap.core.input.json.DocumentationType;
 import org.edamontology.edammap.core.input.json.DownloadType;
 import org.edamontology.edammap.core.input.json.EntityType;
 import org.edamontology.edammap.core.input.json.Link;
+import org.edamontology.edammap.core.input.json.LinkDownload;
 import org.edamontology.edammap.core.input.json.LinkType;
-import org.edamontology.edammap.core.input.json.LinkVersion;
 import org.edamontology.edammap.core.input.json.Tool;
 import org.edamontology.edammap.core.preprocessing.PreProcessor;
 import org.edamontology.edammap.core.query.QueryType;
@@ -287,7 +287,8 @@ public final class Pass2 {
 					|| documentationLink.getType() == DocumentationType.INSTALLATION_INSTRUCTIONS
 					|| documentationLink.getType() == DocumentationType.TRAINING_MATERIAL
 					|| documentationLink.getType() == DocumentationType.API_DOCUMENTATION
-					|| documentationLink.getType() == DocumentationType.FAQ)) {
+					|| documentationLink.getType() == DocumentationType.FAQ
+					|| documentationLink.getType() == DocumentationType.QUICK_START_GUIDE)) {
 				it.remove();
 				return documentationLink.getUrl();
 			}
@@ -510,14 +511,14 @@ public final class Pass2 {
 			for (BiotoolsLink<LinkType> link : linkLinks) {
 				Link<LinkType> newLink = new Link<>();
 				newLink.setUrl(link.getUrl());
-				newLink.setType(link.getType());
+				newLink.setType(Collections.singletonList(link.getType()));
 				links.add(newLink);
 			}
 			tool.setLink(links);
 
-			List<LinkVersion<DownloadType>> downloads = new ArrayList<>();
+			List<LinkDownload> downloads = new ArrayList<>();
 			for (BiotoolsLink<DownloadType> download : downloadLinks) {
-				LinkVersion<DownloadType> newDownload = new LinkVersion<>();
+				LinkDownload newDownload = new LinkDownload();
 				newDownload.setUrl(download.getUrl());
 				newDownload.setType(download.getType());
 				downloads.add(newDownload);
@@ -528,7 +529,7 @@ public final class Pass2 {
 			for (BiotoolsLink<DocumentationType> documentation : documentationLinks) {
 				Link<DocumentationType> newDocumentation = new Link<>();
 				newDocumentation.setUrl(documentation.getUrl());
-				newDocumentation.setType(documentation.getType());
+				newDocumentation.setType(Collections.singletonList(documentation.getType()));
 				documentations.add(newDocumentation);
 			}
 			tool.setDocumentation(documentations);
@@ -1066,13 +1067,13 @@ public final class Pass2 {
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(q -> currentHomepage(q, db)).collect(Collectors.joining(" | ")));
 
 		writeField(resultsWriter, linkLinks.stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
-		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getLink() == null ? "" : t.getLink().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" ; ")))).collect(Collectors.joining(" | ")));
+		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getLink() == null ? "" : t.getLink().stream().map(l -> l.getUrl() + " (" + l.toStringType() + ")").collect(Collectors.joining(" ; ")))).collect(Collectors.joining(" | ")));
 
 		writeField(resultsWriter, downloadLinks.stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getDownload() == null ? "" : t.getDownload().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" ; ")))).collect(Collectors.joining(" | ")));
 
 		writeField(resultsWriter, documentationLinks.stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
-		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getDocumentation() == null ? "" : t.getDocumentation().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" ; ")))).collect(Collectors.joining(" | ")));
+		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getDocumentation() == null ? "" : t.getDocumentation().stream().map(l -> l.getUrl() + " (" + l.toStringType() + ")").collect(Collectors.joining(" ; ")))).collect(Collectors.joining(" | ")));
 
 		if (suggestion != null) {
 			writeField(resultsWriter, suggestion.getBrokenLinks().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
@@ -1816,7 +1817,7 @@ public final class Pass2 {
 				writeField(diffWriter, diff.getModifyHomepage());
 				String linkBiotools = null;
 				if (biotool.getLink() != null && !diff.getAddLinks().isEmpty()) {
-					linkBiotools = biotool.getLink().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | "));
+					linkBiotools = biotool.getLink().stream().map(l -> l.getUrl() + " (" + l.toStringType() + ")").collect(Collectors.joining(" | "));
 				}
 				writeField(diffWriter, linkBiotools);
 				writeField(diffWriter, diff.getAddLinks().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
@@ -1828,7 +1829,7 @@ public final class Pass2 {
 				writeField(diffWriter, diff.getAddDownloads().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));
 				String documentationBiotools = null;
 				if (biotool.getDocumentation() != null && !diff.getAddDocumentations().isEmpty()) {
-					documentationBiotools = biotool.getDocumentation().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | "));
+					documentationBiotools = biotool.getDocumentation().stream().map(l -> l.getUrl() + " (" + l.toStringType() + ")").collect(Collectors.joining(" | "));
 				}
 				writeField(diffWriter, documentationBiotools);
 				writeField(diffWriter, diff.getAddDocumentations().stream().map(l -> l.getUrl() + " (" + l.getType() + ")").collect(Collectors.joining(" | ")));

@@ -109,14 +109,16 @@ public final class Common {
 	private static final Pattern DOCUMENTATION_GENERAL = Pattern.compile("(?i)((" + DOCUMENTATION_GENERAL_EITHER + ")s?([^\\p{L}-]|$))|((^|[^\\p{L}-])(" + DOCUMENTATION_GENERAL_EITHER + "))");
 	private static final String DOCUMENTATION_INSTALL_EITHER = "install|installation|installing";
 	private static final Pattern DOCUMENTATION_INSTALL = Pattern.compile("(?i)((" + DOCUMENTATION_INSTALL_EITHER + ")s?([^\\p{L}-]|$))|((^|[^\\p{L}-])(" + DOCUMENTATION_INSTALL_EITHER + "))");
+	private static final String DOCUMENTATION_QUICK_EITHER = "quick[-_]?tour|getting[-_]?started|beginners?[-_]?guide|start[-_]?guide|quick[-_]?(start|guide)";
+	private static final Pattern DOCUMENTATION_QUICK = Pattern.compile("(?i)((" + DOCUMENTATION_QUICK_EITHER + ")s?([^\\p{L}-]|$))|((^|[^\\p{L}-])(" + DOCUMENTATION_QUICK_EITHER + "))");
 	private static final String DOCUMENTATION_TERMS_EITHER = "terms[-_]?of[-_]?use|conditions[-_]?of[-_]?use";
 	private static final Pattern DOCUMENTATION_TERMS = Pattern.compile("(?i)((^|[^\\p{L}-])(terms|conditions|legal|license|copyright|copying)s?([^\\p{L}-]|$))|((" + DOCUMENTATION_TERMS_EITHER + ")s?([^\\p{L}-]|$))|((^|[^\\p{L}-])(" + DOCUMENTATION_TERMS_EITHER + "))");
 	private static final String DOCUMENTATION_TRAINING_EITHER = "training|exercise";
 	private static final Pattern DOCUMENTATION_TRAINING = Pattern.compile("(?i)((" + DOCUMENTATION_TRAINING_EITHER + ")s?([^\\p{L}-]|$))|((^|[^\\p{L}-])(" + DOCUMENTATION_TRAINING_EITHER + "))");
-	private static final String DOCUMENTATION_TUTORIAL_EITHER = "tutorial|example|(guided|quick)[-_]?tour|getting[-_]?started";
+	private static final String DOCUMENTATION_TUTORIAL_EITHER = "tutorial|example|guided[-_]?tour";
 	private static final Pattern DOCUMENTATION_TUTORIAL = Pattern.compile("(?i)((^|[^\\p{L}-])(demo|tour)s?([^\\p{L}-]|$))|((" + DOCUMENTATION_TUTORIAL_EITHER + ")s?([^\\p{L}-]|$))|((^|[^\\p{L}-])(" + DOCUMENTATION_TUTORIAL_EITHER + "))");
 
-	private static final String DOCUMENTATION_EITHER = "vignette|manual|documentation|how[-_]?to|introduction|instruction|users?[-_]?guide|beginners?[-_]?guide|start[-_]?guide|quick[-_]?(start|guide)";
+	private static final String DOCUMENTATION_EITHER = "vignette|manual|documentation|how[-_]?to|introduction|instruction|users?[-_]?guide";
 	private static final Pattern DOCUMENTATION = Pattern.compile("(?i)((^|[^\\p{L}-])(usage|guide|how|use)s?([^\\p{L}-]|$))|((help|doc|intro|" + DOCUMENTATION_EITHER + ")s?([^\\p{L}-]|$))|((^|[^\\p{L}-])(" + DOCUMENTATION_EITHER + "))");
 	private static final Pattern DOCUMENTATION_WIKI = Pattern.compile("(?i)^(https?://)?(www\\.)?(github\\.com/+[^/]+/+[^/]+/+wiki|sourceforge\\.net/+p/+[^/]+/wiki|sourceforge\\.net/+p/+[^/]+/+home|code\\.google\\.com/+(archive/+)?p/+[^/]+/+wikis?|bitbucket\\.org/+[^/]+/+[^/]+/+wiki)([^\\p{L}]|$)");
 	private static final Pattern DOCUMENTATION_EXT = Pattern.compile("(?i)\\.(pdf|ps|doc|docx|ppt|pptx)([^\\p{L}-]|$)");
@@ -245,6 +247,8 @@ public final class Common {
 			return new BiotoolsLink<DocumentationType>(link, DocumentationType.TRAINING_MATERIAL);
 		} else if (DOCUMENTATION_INSTALL.matcher(link).find()) {
 			return new BiotoolsLink<DocumentationType>(link, DocumentationType.INSTALLATION_INSTRUCTIONS);
+		} else if (DOCUMENTATION_QUICK.matcher(link).find()) {
+			return new BiotoolsLink<DocumentationType>(link, DocumentationType.QUICK_START_GUIDE);
 		} else if (DOCUMENTATION.matcher(link).find()) {
 			return new BiotoolsLink<DocumentationType>(link, DocumentationType.USER_MANUAL);
 		} else if (DOCUMENTATION_GENERAL.matcher(link).find()) {

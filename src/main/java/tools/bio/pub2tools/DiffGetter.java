@@ -34,6 +34,7 @@ import org.edamontology.edammap.core.input.json.Credit;
 import org.edamontology.edammap.core.input.json.DocumentationType;
 import org.edamontology.edammap.core.input.json.DownloadType;
 import org.edamontology.edammap.core.input.json.Link;
+import org.edamontology.edammap.core.input.json.LinkDownload;
 import org.edamontology.edammap.core.input.json.LinkType;
 import org.edamontology.edammap.core.input.json.Tool;
 
@@ -206,7 +207,7 @@ public final class DiffGetter {
 						}
 					}
 					if (!found) {
-						for (Link<DownloadType> downloadBiotools : biotool.getDownload()) {
+						for (LinkDownload downloadBiotools : biotool.getDownload()) {
 							if (linksEqual(link.getUrl(), link.getUrlTrimmed(), downloadBiotools.getUrl(), db, false, false)) {
 								found = true;
 								break;
@@ -233,7 +234,7 @@ public final class DiffGetter {
 				diff.addAddDownload(download);
 			} else {
 				boolean found = false;
-				for (Link<DownloadType> downloadBiotools : biotool.getDownload()) {
+				for (LinkDownload downloadBiotools : biotool.getDownload()) {
 					if (linksEqual(download.getUrl(), download.getUrlTrimmed(), downloadBiotools.getUrl(), db, false, false)) {
 						found = true;
 						break;

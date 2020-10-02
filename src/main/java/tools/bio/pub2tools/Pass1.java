@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018, 2019 Erik Jaaniso
+ * Copyright © 2018, 2019, 2020 Erik Jaaniso
  *
  * This file is part of Pub2Tools.
  *

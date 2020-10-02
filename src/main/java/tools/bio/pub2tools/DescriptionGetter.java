@@ -258,7 +258,8 @@ public final class DescriptionGetter {
 					|| documentationLink.getType() == DocumentationType.INSTALLATION_INSTRUCTIONS
 					|| documentationLink.getType() == DocumentationType.TRAINING_MATERIAL
 					|| documentationLink.getType() == DocumentationType.API_DOCUMENTATION
-					|| documentationLink.getType() == DocumentationType.FAQ) {
+					|| documentationLink.getType() == DocumentationType.FAQ
+					|| documentationLink.getType() == DocumentationType.QUICK_START_GUIDE) {
 				descriptionsFromWebpage(descriptions, documentationLink.getUrl(), db, scrape, minLength, name, true, preProcessor);
 			}
 		}
