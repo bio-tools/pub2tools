@@ -126,7 +126,10 @@ public class SelectPub {
 					doc = fetcher.postDoc("https://www.ebi.ac.uk/europepmc/webservices/rest/searchPOST", query, fetcherArgs);
 				}
 			} else {
-				logger.error(mainMarker, "{}Tag nextCursorMark not found in {}", logPrefix, doc.location());
+				int expectedIndex = (expectedSize - 1) / 1000 + 1;
+				if (expectedIndex > 1 && pageIndex != expectedIndex) {
+					logger.error(mainMarker, "{}Tag nextCursorMark not found in {}", logPrefix, doc.location());
+				}
 				break;
 			}
 			if (resultSize == initialSize) {
