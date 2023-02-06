@@ -609,6 +609,8 @@ public final class Pub2Tools {
 		logger.debug(String.join(" ", argv));
 		logger.info(mainMarker, "This is {} {} ({})", version.getName(), version.getVersion(), version.getUrl());
 
+		java.util.logging.LogManager.getLogManager().reset();
+
 		try {
 			run(args, version);
 			logger.info(mainMarker, "Done");
