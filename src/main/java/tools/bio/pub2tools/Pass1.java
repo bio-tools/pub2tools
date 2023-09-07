@@ -128,6 +128,7 @@ public final class Pass1 {
 	private static final String BIOTOOLS_SCHEMA_NAME_CHARS = " A-Za-z0-9+.,\\-_:;()";
 	private static final Pattern BIOTOOLS_SCHEMA_NAME_PATTERN = Pattern.compile("^[" + BIOTOOLS_SCHEMA_NAME_CHARS + "]*$");
 	private static final Pattern BIOTOOLS_SCHEMA_NAME_INVALID_CHAR = Pattern.compile("[^" + BIOTOOLS_SCHEMA_NAME_CHARS + "]");
+	private static final Pattern BIOTOOLS_SCHEMA_NAME_LETTER = Pattern.compile("[A-Za-z]");
 	private static final String[][] BIOTOOLS_SCHEMA_NAME_REPLACEMENTS = {
 			{ "\u2010", "-" },
 			{ "&", " and " },
@@ -1235,6 +1236,7 @@ public final class Pass1 {
 				suggestionExtracted = Normalizer.normalize(suggestionExtracted, Normalizer.Form.NFKD);
 				suggestionExtracted = Common.WHITESPACE.matcher(suggestionExtracted).replaceAll(" ").trim();
 				suggestionExtracted = BIOTOOLS_SCHEMA_NAME_INVALID_CHAR.matcher(suggestionExtracted).replaceAll("");
+				suggestionExtracted = Common.INTERNAL_TRIM.matcher(suggestionExtracted).replaceAll(" ").trim();
 				logger.info("Name changed from '{}' to '{}' (from pub {})", suggestionExtractedOriginal, suggestionExtracted, result.getPubIds().toString());
 			}
 			if (suggestionExtracted.length() < BIOTOOLS_SCHEMA_NAME_MIN) {
@@ -1244,6 +1246,10 @@ public final class Pass1 {
 			if (suggestionExtracted.length() > BIOTOOLS_SCHEMA_NAME_MAX) {
 				suggestionExtracted = Common.pruneToMax(suggestionExtracted, BIOTOOLS_SCHEMA_NAME_MAX);
 				logger.info("Name pruned to max from '{}' to '{}' (from pub {})", suggestionExtractedOriginal, suggestionExtracted, result.getPubIds().toString());
+			}
+			if (!BIOTOOLS_SCHEMA_NAME_LETTER.matcher(suggestionExtracted).find()) {
+				--i;
+				continue;
 			}
 			suggestion.setExtracted(suggestionExtracted);
 			if (suggestionExtracted.equals(suggestionExtractedOriginal)) {
