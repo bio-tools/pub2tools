@@ -24,7 +24,7 @@
   <groupId>tools.bio.pub2tools</groupId>
   <artifactId>pub2tools</artifactId>
   <version>1.1.2-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
 
   <name>Pub2Tools</name>
   <url>https://github.com/bio-tools/pub2tools</url>
@@ -72,28 +72,23 @@
     <slf4j.version>2.0.9</slf4j.version>
     <jcommander.version>1.82</jcommander.version>
     <jsoup.version>1.16.1</jsoup.version>
+    <jersey.version>3.1.3</jersey.version>
+    <grizzly.version>4.0.0</grizzly.version>
+    <jakarta.activation.version>2.1.2</jakarta.activation.version>
   </properties>
+
+  <modules>
+    <module>core</module>
+    <module>cli</module>
+    <module>server</module>
+    <module>dist</module>
+  </modules>
 
   <dependencies>
     <dependency>
-      <groupId>org.edamontology.pubfetcher</groupId>
-      <artifactId>pubfetcher-core</artifactId>
-      <version>${pubfetcher.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.edamontology.pubfetcher</groupId>
-      <artifactId>pubfetcher-cli</artifactId>
-      <version>${pubfetcher.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.edamontology.edammap</groupId>
-      <artifactId>edammap-core</artifactId>
-      <version>${edammap.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.edamontology.edammap</groupId>
-      <artifactId>edammap-cli</artifactId>
-      <version>${edammap.version}</version>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>${jcommander.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -110,20 +105,9 @@
       <artifactId>slf4j-simple</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
-      <version>${jcommander.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jsoup</groupId>
-      <artifactId>jsoup</artifactId>
-      <version>${jsoup.version}</version>
-    </dependency>
   </dependencies>
 
   <build>
-    <finalName>pub2tools-${pub2tools.version}</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -188,20 +172,11 @@
         <artifactId>maven-jar-plugin</artifactId>
         <version>${maven.jar.version}</version>
         <configuration>
-          <outputDirectory>${project.basedir}/target</outputDirectory>
+          <outputDirectory>${project.parent.basedir}/target</outputDirectory>
           <archive>
             <addMavenDescriptor>false</addMavenDescriptor>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>tools.bio.pub2tools.Pub2Tools</mainClass>
-            </manifest>
           </archive>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -215,7 +190,7 @@
               <goal>jar</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.basedir}/target</outputDirectory>
+              <outputDirectory>${project.parent.basedir}/target</outputDirectory>
               <archive>
                 <addMavenDescriptor>false</addMavenDescriptor>
               </archive>
@@ -227,21 +202,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>${maven.assembly.version}</version>
-        <executions>
-          <execution>
-            <id>assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <descriptors>
-                <descriptor>assembly.xml</descriptor>
-              </descriptors>
-              <appendAssemblyId>false</appendAssemblyId>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
     <pluginManagement>
@@ -258,7 +218,7 @@
                 <goal>copy-dependencies</goal>
               </goals>
               <configuration>
-                <outputDirectory>${project.basedir}/target/lib</outputDirectory>
+                <outputDirectory>${project.parent.basedir}/target/lib</outputDirectory>
                 <excludeGroupIds>tools.bio.pub2tools</excludeGroupIds>
               </configuration>
             </execution>
@@ -271,7 +231,7 @@
               <configuration>
                 <classifier>sources</classifier>
                 <failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
-                <outputDirectory>${project.basedir}/target/lib/src</outputDirectory>
+                <outputDirectory>${project.parent.basedir}/target/lib/src</outputDirectory>
                 <excludeGroupIds>tools.bio.pub2tools</excludeGroupIds>
               </configuration>
             </execution>
