@@ -33,6 +33,9 @@ public final class Page {
 
 	private static final Logger logger = LogManager.getLogger();
 
+	private static final String PUB2TOOLS_RESULTS = "pub2tools-results";
+	private static final String TO_BIOTOOLS = "to-biotools";
+
 	static String get(CoreArgs args) {
 		StringWriter writer = new StringWriter();
 
@@ -60,13 +63,15 @@ public final class Page {
 
 		writer.write("<main>\n\n");
 
+		writer.write("<section id=\"input\">\n\n");
+
 		writer.write("<article>\n");
 
 		writer.write("\t<section id=\"" + Query.PUBLICATION_IDS + "-section\">\n");
 		writer.write("\t\t<h3>Publications</h3>\n");
 		writer.write("\t\t<div>\n");
 		writer.write("\t\t\t<div class=\"input\">\n");
-		writer.write("\t\t\t\t<textarea id=\"" + Query.PUBLICATION_IDS + "\" name=\"" + Query.PUBLICATION_IDS + "\" rows=\"3\" onblur=\"check('" + Query.PUBLICATION_IDS + "','/" + Server.args.getServerPrivateArgs().getPath() + "/api/pub')\" maxlength=\"" + Resource.MAX_PUBLICATION_IDS_LENGTH + "\" placeholder=\"PMID/PMCID/DOI of journal article\"></textarea>\n");
+		writer.write("\t\t\t\t<textarea id=\"" + Query.PUBLICATION_IDS + "\" name=\"" + Query.PUBLICATION_IDS + "\" rows=\"3\" onblur=\"check('" + Query.PUBLICATION_IDS + "','/" + Server.args.getServerPrivateArgs().getPath() + "/api/pub')\" required maxlength=\"" + Resource.MAX_PUBLICATION_IDS_LENGTH + "\" placeholder=\"PMID/PMCID/DOI of journal article\"></textarea>\n");
 		writer.write("\t\t\t\t<span class=\"more\" tabindex=\"0\"></span>\n");
 		writer.write("\t\t\t\t<div class=\"more-box\" tabindex=\"0\">\n");
 		writer.write("\t\t\t\t\tPMID/PMCID/DOI of journal article<br><span class=\"ex\">Ex:</span> <span class=\"example\">17478515<br>PMC3125778<br>10.1093/nar/gkw199</span>\n");
@@ -80,7 +85,7 @@ public final class Page {
 		writer.write("\t\t<h3>Name</h3>\n");
 		writer.write("\t\t<div>\n");
 		writer.write("\t\t\t<div class=\"input\">\n");
-		writer.write("\t\t\t\t<input type=\"text\" id=\"" + Query.NAME + "\" name=\"" + Query.NAME + "\" required maxlength=\"" + Resource.MAX_NAME_LENGTH + "\" placeholder=\"Name of tool or service\">\n");
+		writer.write("\t\t\t\t<input type=\"text\" id=\"" + Query.NAME + "\" name=\"" + Query.NAME + "\" maxlength=\"" + Resource.MAX_NAME_LENGTH + "\" placeholder=\"Name of tool or service\">\n");
 		writer.write("\t\t\t\t<span class=\"more\" tabindex=\"0\"></span>\n");
 		writer.write("\t\t\t\t<div class=\"more-box\" tabindex=\"0\">\n");
 		writer.write("\t\t\t\t\tName of tool or service<br><span class=\"ex\">Ex:</span> <span class=\"example\">g:Profiler</span>\n");
@@ -103,7 +108,46 @@ public final class Page {
 		writer.write("\t\t</div>\n");
 		writer.write("\t</section>\n");
 
+		writer.write("<div id=\"withoutmap\" class=\"button\"><div><input type=\"submit\" value=\"Run Pub2Tools\" onclick=\"run('withoutmap')\"></div><div id=\"withoutmap-output\" class=\"button-output\"></div></div>");
+		writer.write("<div id=\"all\" class=\"button\"><div><input type=\"submit\" value=\"Run all\" onclick=\"run('all')\"></div><div id=\"all-output\" class=\"button-output\"></div></div>\n");
+
 		writer.write("</article>\n\n");
+
+		writer.write("<article>\n");
+
+		writer.write("\t<section id=\"" + PUB2TOOLS_RESULTS + "-section\">\n");
+		writer.write("\t\t<h3>Pub2Tools results</h3>\n");
+		writer.write("\t\t<div>\n");
+		writer.write("\t\t\t<div class=\"input\">\n");
+		writer.write("\t\t\t\t<textarea id=\"" + PUB2TOOLS_RESULTS + "\" name=\"" + PUB2TOOLS_RESULTS + "\" rows=\"12\"></textarea>\n");
+		writer.write("\t\t\t\t<span class=\"more\" tabindex=\"0\"></span>\n");
+		writer.write("\t\t\t\t<div class=\"more-box\" tabindex=\"0\">\n");
+		writer.write("\t\t\t\t\tOutput of Pub2Tools<br>Can be edited before being sent to EDAMmap for final bio.tools entry generation\n");
+		writer.write("\t\t\t\t</div>\n");
+		writer.write("\t\t\t</div>\n");
+		writer.write("\t\t\t<div id=\"" + PUB2TOOLS_RESULTS + "-output\" class=\"output output-bad\"></div>\n");
+		writer.write("\t\t</div>\n");
+		writer.write("\t</section>\n");
+
+		writer.write("<div id=\"map\" class=\"button\"><div><input type=\"submit\" value=\"Run EDAMmap\" onclick=\"run('map')\"></div><div id=\"map-output\" class=\"button-output\"></div></div>\n");
+
+		writer.write("</article>\n\n");
+
+		writer.write("</section>\n");
+		writer.write("<section id=\"output\">\n\n");
+
+		writer.write("<article>\n");
+
+		writer.write("\t<section id=\"" + TO_BIOTOOLS + "-section\">\n");
+		writer.write("\t\t<h3 onclick=\"document.getElementById('to-biotools-output').focus(); document.getElementById('to-biotools-output').select()\" style=\"cursor: pointer;\">To bio.tools</h3>\n");
+		writer.write("\t\t<div>\n");
+		writer.write("\t\t\t<textarea id=\"" + TO_BIOTOOLS + "-output\" class=\"output\" readonly></textarea>\n");
+		writer.write("\t\t</div>\n");
+		writer.write("\t</section>\n");
+
+		writer.write("</article>\n\n");
+
+		writer.write("</section>\n\n");
 
 		writer.write("</main>\n\n");
 
