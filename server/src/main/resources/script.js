@@ -163,11 +163,13 @@ var biotoolsExisting = function(text, arr) {
 	}
 };
 
-var run = function(id) {
+var run = function(id, endpoint) {
 	var buttonOutput = document.getElementById(id + '-output');
 	var buttonOutputs = document.querySelectorAll('.button-output');
 	var buttonInputs = document.querySelectorAll('.button input');
 	buttonInputs.forEach(e => e.disabled = true);
+	document.getElementById('pub2tools-results').readOnly = true;
+	document.body.classList.add('progress');
 	var request = new XMLHttpRequest();
 	request.onreadystatechange = function() {
 		if (request.readyState == 4 && request.status > 0) {
@@ -191,29 +193,31 @@ var run = function(id) {
 					} else {
 						document.getElementById('pub2tools-results').classList.add('input-bad');
 					}
-					var output_html = '';
-					if (!json['status']['include']) {
-						output_html += '<span>Not a tool!</span><br>';
+					if (json['status']) {
+						var output_html = '';
+						if (!json['status']['include']) {
+							output_html += '<span>Not a tool!</span><br>';
+						}
+						if (json['status']['homepageBroken']) {
+							output_html += '<span>Homepage broken!</span><br>';
+						}
+						if (json['status']['homepageMissing']) {
+							output_html += '<span>Homepage missing!</span><br>';
+						}
+						output_html += biotoolsExisting('Existing in bio.tools as', json['status']['existing']);
+						output_html += biotoolsExisting('Same publications and name as in', json['status']['publicationAndNameExisting']);
+						output_html += biotoolsExisting('Same name and some publications in common with', json['status']['nameExistingSomePublicationDifferent']);
+						output_html += biotoolsExisting('Some publications in common but name different from', json['status']['somePublicationExistingNameDifferent']);
+						output_html += biotoolsExisting('Same name but publications different in', json['status']['nameExistingPublicationDifferent']);
+						output_html += biotoolsExisting('Name similar to', json['status']['nameMatch']);
+						if (json['status']['otherNames'] != null && json['status']['otherNames'].length > 0) {
+							output_html += '<span>Correct name could also be ' + json['status']['otherNames'].map(e => '"' + escape(e) + '"').join(', ') + '</span><br>';
+						}
+						if (json['status']['toolsExtra'] != null && json['status']['toolsExtra'].length > 0) {
+							output_html += '<span>Given publications could contain extra tools: ' + json['status']['toolsExtra'].map(e => '"' + escape(e) + '"').join(', ') + '</span><br>';
+						}
+						document.getElementById('pub2tools-results-output').innerHTML = output_html;
 					}
-					if (json['status']['homepageBroken']) {
-						output_html += '<span>Homepage broken!</span><br>';
-					}
-					if (json['status']['homepageMissing']) {
-						output_html += '<span>Homepage missing!</span><br>';
-					}
-					output_html += biotoolsExisting('Existing in bio.tools as', json['status']['existing']);
-					output_html += biotoolsExisting('Same publications and name as in', json['status']['publicationAndNameExisting']);
-					output_html += biotoolsExisting('Same name and some publications in common with', json['status']['nameExistingSomePublicationDifferent']);
-					output_html += biotoolsExisting('Some publications in common but name different from', json['status']['somePublicationExistingNameDifferent']);
-					output_html += biotoolsExisting('Same name but publications different in', json['status']['nameExistingPublicationDifferent']);
-					output_html += biotoolsExisting('Name similar to', json['status']['nameMatch']);
-					if (json['status']['otherNames'] != null && json['status']['otherNames'].length > 0) {
-						output_html += '<span>Correct name could also be ' + json['status']['otherNames'].map(e => '"' + escape(e) + '"').join(', ') + '</span><br>';
-					}
-					if (json['status']['toolsExtra'] != null && json['status']['toolsExtra'].length > 0) {
-						output_html += '<span>Given publications could contain extra tools: ' + json['status']['toolsExtra'].map(e => '"' + escape(e) + '"').join(', ') + '</span><br>';
-					}
-					document.getElementById('pub2tools-results-output').innerHTML = output_html;
 				}
 				if (id == 'map' || id == 'all') {
 					document.getElementById('to-biotools-output').innerHTML = escape(JSON.stringify(json['tool'], null, 2));
@@ -233,6 +237,8 @@ var run = function(id) {
 				}
 				buttonOutput.innerHTML = output_html;
 			}
+			document.body.classList.remove('progress');
+			document.getElementById('pub2tools-results').readOnly = false;
 			buttonInputs.forEach(e => e.disabled = false);
 		}
 	}
@@ -257,7 +263,7 @@ var run = function(id) {
 			}
 		}
 	}
-	request.open('POST', '/pub2tools/api', true);
+	request.open('POST', endpoint, true);
 	request.setRequestHeader('Content-Type', 'application/json');
 	request.send(JSON.stringify(params));
 	buttonOutputs.forEach(e => e.innerHTML = '');

@@ -28,8 +28,8 @@ import org.edamontology.pubfetcher.core.common.Arg;
 public class ServerPrivateArgs extends ServerPrivateArgsBase {
 
 	private static final String pathId = "path";
-	private static final String pathDescription = "Path where the server will be deployed (only one single path segment supported)";
-	private static final String pathDefault = "pub2tools";
+	private static final String pathDescription = "Path where the server will be deployed (only one single path segment supported, prepend with '/')";
+	private static final String pathDefault = "";
 	@Parameter(names = { "-p", "--" + pathId }, description = pathDescription)
 	private String path = pathDefault;
 

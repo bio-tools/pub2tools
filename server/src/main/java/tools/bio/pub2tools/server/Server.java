@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 import org.edamontology.pubfetcher.core.common.Arg;
 import org.edamontology.pubfetcher.core.common.BasicArgs;
 import org.edamontology.pubfetcher.core.common.Version;
+import org.edamontology.pubfetcher.core.db.Database;
 
 import org.edamontology.edammap.core.args.ArgMain;
 import org.edamontology.edammap.core.edam.Concept;
@@ -104,6 +105,11 @@ public final class Server {
 
 		edamBlacklist = Edam.getBlacklist();
 
+		if (!Files.isReadable(Paths.get(args.getProcessorArgs().getDb()))) {
+			logger.info("Init database: {}", args.getProcessorArgs().getDb());
+			Database.init(args.getProcessorArgs().getDb());
+			logger.info("Init: success");
+		}
 		processor = new Processor(args.getProcessorArgs(), args.getFetcherPrivateArgs());
 
 		if (args.getProcessorArgs().getIdf() != null && !args.getProcessorArgs().getIdf().isEmpty()) {

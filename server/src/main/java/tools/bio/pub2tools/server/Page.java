@@ -48,7 +48,7 @@ public final class Page {
 		writer.write("\t<meta name=\"author\" content=\"Erik Jaaniso\">\n");
 		writer.write("\t<meta name=\"description\" content=\"A tool that constructs entry candidates for the bio.tools software registry from suitable publications.\">\n");
 		writer.write("\t<title>" + Server.version.getName() + " " + Server.version.getVersion() + "</title>\n");
-		writer.write("\t<link rel=\"stylesheet\" href=\"/" + Server.args.getServerPrivateArgs().getPath() + "/style.css\">\n");
+		writer.write("\t<link rel=\"stylesheet\" href=\"" + Server.args.getServerPrivateArgs().getPath() + "/style.css\">\n");
 		writer.write("</head>\n\n");
 
 		writer.write("<body>\n\n");
@@ -66,12 +66,13 @@ public final class Page {
 		writer.write("<section id=\"input\">\n\n");
 
 		writer.write("<article>\n");
+		writer.write("\t<h2 class=\"step\">1.</h2>\n");
 
 		writer.write("\t<section id=\"" + Query.PUBLICATION_IDS + "-section\">\n");
 		writer.write("\t\t<h3>Publications</h3>\n");
 		writer.write("\t\t<div>\n");
 		writer.write("\t\t\t<div class=\"input\">\n");
-		writer.write("\t\t\t\t<textarea id=\"" + Query.PUBLICATION_IDS + "\" name=\"" + Query.PUBLICATION_IDS + "\" rows=\"3\" onblur=\"check('" + Query.PUBLICATION_IDS + "','/" + Server.args.getServerPrivateArgs().getPath() + "/api/pub')\" required maxlength=\"" + Resource.MAX_PUBLICATION_IDS_LENGTH + "\" placeholder=\"PMID/PMCID/DOI of journal article\"></textarea>\n");
+		writer.write("\t\t\t\t<textarea id=\"" + Query.PUBLICATION_IDS + "\" name=\"" + Query.PUBLICATION_IDS + "\" rows=\"3\" onblur=\"check('" + Query.PUBLICATION_IDS + "','" + Server.args.getServerPrivateArgs().getPath() + "/api/pub')\" required maxlength=\"" + Resource.MAX_PUBLICATION_IDS_LENGTH + "\" placeholder=\"PMID/PMCID/DOI of journal article\"></textarea>\n");
 		writer.write("\t\t\t\t<span class=\"more\" tabindex=\"0\"></span>\n");
 		writer.write("\t\t\t\t<div class=\"more-box\" tabindex=\"0\">\n");
 		writer.write("\t\t\t\t\tPMID/PMCID/DOI of journal article<br><span class=\"ex\">Ex:</span> <span class=\"example\">17478515<br>PMC3125778<br>10.1093/nar/gkw199</span>\n");
@@ -85,10 +86,10 @@ public final class Page {
 		writer.write("\t\t<h3>Name</h3>\n");
 		writer.write("\t\t<div>\n");
 		writer.write("\t\t\t<div class=\"input\">\n");
-		writer.write("\t\t\t\t<input type=\"text\" id=\"" + Query.NAME + "\" name=\"" + Query.NAME + "\" maxlength=\"" + Resource.MAX_NAME_LENGTH + "\" placeholder=\"Name of tool or service\">\n");
+		writer.write("\t\t\t\t<input type=\"text\" id=\"" + Query.NAME + "\" name=\"" + Query.NAME + "\" maxlength=\"" + Resource.MAX_NAME_LENGTH + "\" placeholder=\"Name of tool or service (not mandatory)\">\n");
 		writer.write("\t\t\t\t<span class=\"more\" tabindex=\"0\"></span>\n");
 		writer.write("\t\t\t\t<div class=\"more-box\" tabindex=\"0\">\n");
-		writer.write("\t\t\t\t\tName of tool or service<br><span class=\"ex\">Ex:</span> <span class=\"example\">g:Profiler</span>\n");
+		writer.write("\t\t\t\t\tName of tool or service (not mandatory)<br><span class=\"ex\">Ex:</span> <span class=\"example\">g:Profiler</span>\n");
 		writer.write("\t\t\t\t</div>\n");
 		writer.write("\t\t\t</div>\n");
 		writer.write("\t\t</div>\n");
@@ -98,22 +99,23 @@ public final class Page {
 		writer.write("\t\t<h3>Links</h3>\n");
 		writer.write("\t\t<div>\n");
 		writer.write("\t\t\t<div class=\"input\">\n");
-		writer.write("\t\t\t\t<textarea id=\"" + Query.WEBPAGE_URLS + "\" name=\"" + Query.WEBPAGE_URLS + "\" rows=\"3\" onblur=\"check('" + Query.WEBPAGE_URLS + "','/" + Server.args.getServerPrivateArgs().getPath() + "/api/web')\" maxlength=\"" + Resource.MAX_LINKS_LENGTH + "\" placeholder=\"URLs of homepage, etc\"></textarea>\n");
+		writer.write("\t\t\t\t<textarea id=\"" + Query.WEBPAGE_URLS + "\" name=\"" + Query.WEBPAGE_URLS + "\" rows=\"3\" onblur=\"check('" + Query.WEBPAGE_URLS + "','" + Server.args.getServerPrivateArgs().getPath() + "/api/web')\" maxlength=\"" + Resource.MAX_LINKS_LENGTH + "\" placeholder=\"URLs of homepage, etc (not mandatory)\"></textarea>\n");
 		writer.write("\t\t\t\t<span class=\"more\" tabindex=\"0\"></span>\n");
 		writer.write("\t\t\t\t<div class=\"more-box\" tabindex=\"0\">\n");
-		writer.write("\t\t\t\t\tURLs of homepage, etc<br><span class=\"ex\">Ex:</span> <span class=\"example\">https://biit.cs.ut.ee/gprofiler/</span>\n");
+		writer.write("\t\t\t\t\tURLs of homepage, etc (not mandatory)<br><span class=\"ex\">Ex:</span> <span class=\"example\">https://biit.cs.ut.ee/gprofiler/</span>\n");
 		writer.write("\t\t\t\t</div>\n");
 		writer.write("\t\t\t</div>\n");
 		writer.write("\t\t\t<div id=\"" + Query.WEBPAGE_URLS + "-output\" class=\"output\"></div>\n");
 		writer.write("\t\t</div>\n");
 		writer.write("\t</section>\n");
 
-		writer.write("<div id=\"withoutmap\" class=\"button\"><div><input type=\"submit\" value=\"Run Pub2Tools\" onclick=\"run('withoutmap')\"></div><div id=\"withoutmap-output\" class=\"button-output\"></div></div>");
-		writer.write("<div id=\"all\" class=\"button\"><div><input type=\"submit\" value=\"Run all\" onclick=\"run('all')\"></div><div id=\"all-output\" class=\"button-output\"></div></div>\n");
+		writer.write("\t<div id=\"withoutmap\" class=\"button\"><div><input type=\"submit\" value=\"Run Pub2Tools\" onclick=\"run('withoutmap','" + Server.args.getServerPrivateArgs().getPath() + "/api')\"></div><div id=\"withoutmap-output\" class=\"button-output\"></div></div>");
+		writer.write("<div id=\"all\" class=\"button\"><div><input type=\"submit\" value=\"Run all\" onclick=\"run('all','" + Server.args.getServerPrivateArgs().getPath() + "/api')\"></div><div id=\"all-output\" class=\"button-output\"></div></div>\n");
 
 		writer.write("</article>\n\n");
 
 		writer.write("<article>\n");
+		writer.write("\t<h2 class=\"step\">2.</h2>\n");
 
 		writer.write("\t<section id=\"" + PUB2TOOLS_RESULTS + "-section\">\n");
 		writer.write("\t\t<h3>Pub2Tools results</h3>\n");
@@ -129,7 +131,7 @@ public final class Page {
 		writer.write("\t\t</div>\n");
 		writer.write("\t</section>\n");
 
-		writer.write("<div id=\"map\" class=\"button\"><div><input type=\"submit\" value=\"Run EDAMmap\" onclick=\"run('map')\"></div><div id=\"map-output\" class=\"button-output\"></div></div>\n");
+		writer.write("\t<div id=\"map\" class=\"button\"><div><input type=\"submit\" value=\"Run EDAMmap\" onclick=\"run('map','" + Server.args.getServerPrivateArgs().getPath() + "/api')\"></div><div id=\"map-output\" class=\"button-output\"></div></div>\n");
 
 		writer.write("</article>\n\n");
 
@@ -137,6 +139,7 @@ public final class Page {
 		writer.write("<section id=\"output\">\n\n");
 
 		writer.write("<article>\n");
+		writer.write("\t<h2 class=\"step\">3.</h2>\n");
 
 		writer.write("\t<section id=\"" + TO_BIOTOOLS + "-section\">\n");
 		writer.write("\t\t<h3 onclick=\"document.getElementById('to-biotools-output').focus(); document.getElementById('to-biotools-output').select()\" style=\"cursor: pointer;\">To bio.tools</h3>\n");
@@ -153,9 +156,9 @@ public final class Page {
 
 		writer.write("<footer>\n\n");
 
-		writer.write("<h2>Parameters</h2>\n\n");
+		writer.write("<h2 id=\"parameters\" onclick=\"if (this.classList.contains('opened')) { this.classList.remove('opened'); document.getElementById('tabs').style.display = 'none' } else { this.classList.add('opened'); document.getElementById('tabs').style.display = 'block' }\" style=\"cursor: pointer;\">Parameters</h2>\n\n");
 
-		writer.write("<section id=\"tabs\">\n");
+		writer.write("<section id=\"tabs\" style=\"display: none;\">\n");
 		writer.write("\n");
 		try {
 			Params.writeMain(Server.getArgsMain(true), writer);
@@ -172,7 +175,7 @@ public final class Page {
 
 		writer.write("</footer>\n\n");
 
-		writer.write("<script src=\"/" + Server.args.getServerPrivateArgs().getPath() + "/script.js\"></script>\n\n");
+		writer.write("<script src=\"" + Server.args.getServerPrivateArgs().getPath() + "/script.js\"></script>\n\n");
 
 		writer.write("</body>\n\n");
 

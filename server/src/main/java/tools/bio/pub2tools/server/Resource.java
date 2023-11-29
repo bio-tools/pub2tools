@@ -242,6 +242,11 @@ public class Resource extends org.edamontology.edammap.server.ResourceBase {
 					toolOut.setBiotoolsID(uuid + "-map");
 				}
 			}
+			try {
+				toolOut.check(1);
+			} catch (ParseException e) {
+				throw new IllegalRequestException(e);
+			}
 		} else {
 			toolOut = tool;
 		}
@@ -266,10 +271,10 @@ public class Resource extends org.edamontology.edammap.server.ResourceBase {
 		}
 
 		URI baseLocation = new URI(Server.args.getServerPrivateArgs().isHttpsProxy() ? "https" : request.getScheme(), null, request.getServerName(), Server.args.getServerPrivateArgs().isHttpsProxy() ? 443 : request.getServerPort(), null, null, null);
-		URI apiLocation = new URI(baseLocation.getScheme(), null, baseLocation.getHost(), baseLocation.getPort(), "/" + Server.args.getServerPrivateArgs().getPath() + "/api", null, null);
+		URI apiLocation = new URI(baseLocation.getScheme(), null, baseLocation.getHost(), baseLocation.getPort(), Server.args.getServerPrivateArgs().getPath() + "/api", null, null);
 		URI jsonLocation = null;
 		if (jsonOutput != null) {
-			jsonLocation = new URI(baseLocation.getScheme(), null, baseLocation.getHost(), baseLocation.getPort(), "/" + Server.args.getServerPrivateArgs().getPath() + "/" + jsonOutput, null, null);
+			jsonLocation = new URI(baseLocation.getScheme(), null, baseLocation.getHost(), baseLocation.getPort(), Server.args.getServerPrivateArgs().getPath() + "/" + jsonOutput, null, null);
 		}
 
 		Map<String, String> jsonFields = new LinkedHashMap<>();

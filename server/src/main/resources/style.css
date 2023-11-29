@@ -129,6 +129,9 @@ body {
 	padding: 0.5rem 0;
 	line-height: 1.5;
 }
+body.progress, body.progress * {
+	cursor: progress !important;
+}
 
 a {
 	text-decoration: underline;
@@ -138,6 +141,12 @@ a:hover {
 }
 a:active {
 	color: rgba(0,0,128,1);
+}
+
+main, footer {
+	max-width: 80rem;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 /* title */
@@ -168,16 +177,10 @@ header > p > span {
 
 /* main */
 
-main {
-	max-width: 80rem;
-	margin-left: auto;
-	margin-right: auto;
-}
-
 #input {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: flex-end;
+	align-items: flex-start;
 }
 
 #input > article {
@@ -185,7 +188,25 @@ main {
 }
 
 article {
+	position: relative;
 	min-width: 32rem;
+	border-top: 3px solid transparent;
+	border-right: 9px solid transparent;
+	border-radius: 42px;
+	background-image: linear-gradient(to left, rgb(0,0,0), rgba(0,0,0,0)), linear-gradient(to bottom, rgb(0,0,0), rgb(0,0,0,0));
+	background-size: 100% 3px, 3px 100%;
+	background-position: top left, bottom right;
+	background-origin: border-box;
+	background-repeat: no-repeat;
+	margin-top: 1rem;
+	margin-right: 0.5rem;
+}
+
+.step {
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin: 0;
 }
 
 article > section {
@@ -370,6 +391,14 @@ article > section > div {
 }
 
 /* param tabs */
+
+#parameters::before {
+	font-family: 'Font Awesome 5 Free';
+	content: "\f0da\ ";
+}
+#parameters.opened::before {
+	content: "\f0d7\ ";
+}
 
 #tabs {
 	position: relative;
