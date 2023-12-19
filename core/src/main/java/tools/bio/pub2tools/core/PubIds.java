@@ -50,8 +50,47 @@ public class PubIds {
 		this.doi = doi;
 	}
 
+	public PubIds() {}
+
+	public PubIds(String pmid, String pmcid, String doi) {
+		this.pmid = pmid;
+		this.pmcid = pmcid;
+		this.doi = doi;
+	}
+
 	@Override
 	public String toString() {
 		return "[" + PublicationIds.toString(pmid, pmcid, doi, false) + "]";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof PubIds)) return false;
+		PubIds other = (PubIds) obj;
+		if (pmid == null) {
+			if (other.pmid != null) return false;
+		} else if (!pmid.equals(other.pmid)) return false;
+		if (pmcid == null) {
+			if (other.pmcid != null) return false;
+		} else if (!pmcid.equals(other.pmcid)) return false;
+		if (doi == null) {
+			if (other.doi != null) return false;
+		} else if (!doi.equals(other.doi)) return false;
+		return other.canEqual(this);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((pmid == null) ? 0 : pmid.hashCode());
+		result = prime * result + ((pmcid == null) ? 0 : pmcid.hashCode());
+		result = prime * result + ((doi == null) ? 0 : doi.hashCode());
+		return result;
+	}
+
+	public boolean canEqual(Object other) {
+		return (other instanceof PubIds);
 	}
 }

@@ -1198,10 +1198,7 @@ public final class Pass1 {
 		Result1 result = new Result1();
 
 		PublicationIds publicationIds = new PublicationIds(pmid, pmcid, doi, publication.getPmid().getUrl(), publication.getPmcid().getUrl(), publication.getDoi().getUrl());
-		PubIds pubIds = new PubIds();
-		pubIds.setPmid(publicationIds.getPmid());
-		pubIds.setPmcid(publicationIds.getPmcid());
-		pubIds.setDoi(publicationIds.getDoi());
+		PubIds pubIds = new PubIds(publicationIds.getPmid(), publicationIds.getPmcid(), publicationIds.getDoi());
 		result.setPubIds(pubIds);
 
 		result.setTitle(title);

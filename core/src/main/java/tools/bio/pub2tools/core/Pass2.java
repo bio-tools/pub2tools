@@ -1976,10 +1976,35 @@ public final class Pass2 {
 				writeField(diffWriter, diff.getAddCredits().stream().map(c -> c.toString()).collect(Collectors.joining(" | ")), true);
 			}
 
-			logger.info(mainMarker, "{}Writing {} new bio.tools entries to {}", logPrefix, tools.size(), newPath.toString());
-			org.edamontology.edammap.core.output.Json.outputBiotools(newWriter, tools);
+			List<Tool> toolsUniq = new ArrayList<>();
+			for (Tool tool : tools) {
+				boolean existing = false;
+				for (Tool toolUniq : toolsUniq) {
+					if (tool.getName().equals(toolUniq.getName())) {
+						for (org.edamontology.edammap.core.input.json.Publication publicationTool : tool.getPublication()) {
+							PubIds pubIdsTool = new PubIds(publicationTool.getPmid(), publicationTool.getPmcid(), publicationTool.getDoi());
+							for (org.edamontology.edammap.core.input.json.Publication publicationToolUniq : toolUniq.getPublication()) {
+								PubIds pubIdsToolUniq = new PubIds(publicationToolUniq.getPmid(), publicationToolUniq.getPmcid(), publicationToolUniq.getDoi());
+								if (pubIdsTool.equals(pubIdsToolUniq)) {
+									existing = true;
+								}
+							}
+						}
+						if (existing) {
+							logger.warn("New tool {} ({}) already proposed, omitting", tool.getName(), tool.getPublication().stream().map(p -> "[" + PublicationIds.toString(p.getPmid(), p.getPmcid(), p.getDoi(), false) + "]").collect(Collectors.joining(", ")));
+							break;
+						}
+					}
+				}
+				if (!existing) {
+					toolsUniq.add(tool);
+				}
+			}
 
-			return tools;
+			logger.info(mainMarker, "{}Writing {} new bio.tools entries to {}", logPrefix, toolsUniq.size(), newPath.toString());
+			org.edamontology.edammap.core.output.Json.outputBiotools(newWriter, toolsUniq);
+
+			return toolsUniq;
 		} finally {
 			if (db != null && dbProvided == null) {
 				db.close();
