@@ -218,7 +218,9 @@ public final class Pub2Tools {
 		Set<PublicationIds> publicationIds = new LinkedHashSet<>();
 		publicationIds.addAll(publicationIdsList);
 		logger.info(mainMarker, "{}Fetching {} publications using PubFetcher", logPrefix, publicationIds.size());
-		PubFetcherMethods.dbFetch(null, threads, publicationIds, dbFile, new Fetcher(fetcherArgs.getPrivateArgs()), null, fetcherArgs, true, publicationIds.size(), logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG, DatabaseEntryType.publication);
+		try (Fetcher fetcher = new Fetcher(fetcherArgs.getPrivateArgs())) {
+			PubFetcherMethods.dbFetch(null, threads, publicationIds, dbFile, fetcher, null, fetcherArgs, true, publicationIds.size(), logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG, DatabaseEntryType.publication);
+		}
 		try (Database db = new Database(dbFile)) {
 			logger.info(mainMarker, "{}Database {} has {} publications", logPrefix, dbFile, db.getPublicationsSize());
 		}
@@ -243,7 +245,9 @@ public final class Pub2Tools {
 		Set<String> webpageUrls = new LinkedHashSet<>();
 		webpageUrls.addAll(webpageUrlsList);
 		logger.info(mainMarker, "{}Fetching {} webpages using PubFetcher", logPrefix, webpageUrls.size());
-		PubFetcherMethods.dbFetch(null, threads, webpageUrls, dbFile, new Fetcher(fetcherArgs.getPrivateArgs()), null, fetcherArgs, true, webpageUrls.size(), logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG, DatabaseEntryType.webpage);
+		try (Fetcher fetcher = new Fetcher(fetcherArgs.getPrivateArgs())) {
+			PubFetcherMethods.dbFetch(null, threads, webpageUrls, dbFile, fetcher, null, fetcherArgs, true, webpageUrls.size(), logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG, DatabaseEntryType.webpage);
+		}
 		try (Database db = new Database(dbFile)) {
 			logger.info(mainMarker, "{}Database {} has {} webpages", logPrefix, dbFile, db.getWebpagesSize());
 		}
@@ -253,7 +257,9 @@ public final class Pub2Tools {
 		Set<String> docUrls = new LinkedHashSet<>();
 		docUrls.addAll(docUrlsList);
 		logger.info(mainMarker, "{}Fetching {} docs using PubFetcher", logPrefix, docUrls.size());
-		PubFetcherMethods.dbFetch(null, threads, docUrls, dbFile, new Fetcher(fetcherArgs.getPrivateArgs()), null, fetcherArgs, true, docUrls.size(), logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG, DatabaseEntryType.doc);
+		try (Fetcher fetcher = new Fetcher(fetcherArgs.getPrivateArgs())) {
+			PubFetcherMethods.dbFetch(null, threads, docUrls, dbFile, fetcher, null, fetcherArgs, true, docUrls.size(), logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG, DatabaseEntryType.doc);
+		}
 		try (Database db = new Database(dbFile)) {
 			logger.info(mainMarker, "{}Database {} has {} docs", logPrefix, dbFile, db.getDocsSize());
 		}

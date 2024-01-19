@@ -187,50 +187,50 @@ public final class Test {
 		if (fetcherArgs.getPrivateArgs().getEuropepmcEmail() != null && !fetcherArgs.getPrivateArgs().getEuropepmcEmail().isEmpty()) {
 			email = "&email=" + fetcherArgs.getPrivateArgs().getEuropepmcEmail();
 		}
-		Fetcher fetcher = new Fetcher(fetcherArgs.getPrivateArgs());
+		try (Fetcher fetcher = new Fetcher(fetcherArgs.getPrivateArgs())) {
+			Map<String, Integer> tokenCountSorted = tokenCount.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (k, v) -> { throw new AssertionError(); }, LinkedHashMap<String, Integer>::new));
 
-		Map<String, Integer> tokenCountSorted = tokenCount.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (k, v) -> { throw new AssertionError(); }, LinkedHashMap<String, Integer>::new));
-
-		int last = 0;
-		for (Map.Entry<String, Integer> token : tokenCountSorted.entrySet()) {
-			if (token.getValue() < min) {
-				break;
-			} else {
-				++last;
+			int last = 0;
+			for (Map.Entry<String, Integer> token : tokenCountSorted.entrySet()) {
+				if (token.getValue() < min) {
+					break;
+				} else {
+					++last;
+				}
 			}
-		}
 
-		int current = 0;
-		long start = System.currentTimeMillis();
-		for (Map.Entry<String, Integer> token : tokenCountSorted.entrySet()) {
-			if (token.getValue() < min) {
-				break;
-			} else {
-				++current;
-			}
-			System.err.print(PubFetcher.progress(current, last, start) + "  \r");
+			int current = 0;
+			long start = System.currentTimeMillis();
+			for (Map.Entry<String, Integer> token : tokenCountSorted.entrySet()) {
+				if (token.getValue() < min) {
+					break;
+				} else {
+					++current;
+				}
+				System.err.print(PubFetcher.progress(current, last, start) + "  \r");
 
-			try {
-				String abstractQuery = new URI("https", "www.ebi.ac.uk", "/europepmc/webservices/rest/search", "resulttype=idlist&format=xml&query=abstract:\"" + token.getKey() + "\" src:med" + email, null).toASCIIString();
-				Document doc = fetcher.getDoc(abstractQuery, false, fetcherArgs);
-				if (doc != null) {
-					Element hitCount = doc.getElementsByTag("hitCount").first();
-					if (hitCount != null) {
-						try {
-							int count = Integer.parseInt(hitCount.text());
-							double share = token.getValue() / (double) count;
-							System.out.println(share + "\t" + token.getKey() + "\t" + token.getValue() + "\t" + count);
-						} catch (NumberFormatException e) {
-							logger.error(mainMarker, "hitCount is not a number in Europe PMC query " + abstractQuery, e);
+				try {
+					String abstractQuery = new URI("https", "www.ebi.ac.uk", "/europepmc/webservices/rest/search", "resulttype=idlist&format=xml&query=abstract:\"" + token.getKey() + "\" src:med" + email, null).toASCIIString();
+					Document doc = fetcher.getDoc(abstractQuery, false, fetcherArgs);
+					if (doc != null) {
+						Element hitCount = doc.getElementsByTag("hitCount").first();
+						if (hitCount != null) {
+							try {
+								int count = Integer.parseInt(hitCount.text());
+								double share = token.getValue() / (double) count;
+								System.out.println(share + "\t" + token.getKey() + "\t" + token.getValue() + "\t" + count);
+							} catch (NumberFormatException e) {
+								logger.error(mainMarker, "hitCount is not a number in Europe PMC query " + abstractQuery, e);
+							}
+						} else {
+							logger.error(mainMarker, "Element hitCount not found in Europe PMC query {}", abstractQuery);
 						}
 					} else {
-						logger.error(mainMarker, "Element hitCount not found in Europe PMC query {}", abstractQuery);
+						logger.error(mainMarker, "No Document returned for Europe PMC query {}", abstractQuery);
 					}
-				} else {
-					logger.error(mainMarker, "No Document returned for Europe PMC query {}", abstractQuery);
+				} catch (URISyntaxException e) {
+					logger.error(mainMarker, "Invalid Europe PMC query URI!", e);
 				}
-			} catch (URISyntaxException e) {
-				logger.error(mainMarker, "Invalid Europe PMC query URI!", e);
 			}
 		}
 	}

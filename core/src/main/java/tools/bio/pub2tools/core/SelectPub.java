@@ -76,79 +76,79 @@ public class SelectPub {
 		int pageIndex = 0;
 		long start = System.currentTimeMillis();
 
-		Fetcher fetcher = new Fetcher(fetcherArgs.getPrivateArgs());
-		Map<String, String> query = getQuery(resultType, cursorMark, date, source, search, custom, not, fetcherArgs);
-		Document doc = fetcher.postDoc("https://www.ebi.ac.uk/europepmc/webservices/rest/searchPOST", query, fetcherArgs);
-		if (doc == null) {
-			throw new RuntimeException("No Document returned for query " + query);
-		}
-
-		while (doc != null) {
-			int initialSize = resultSize;
-			for (Element result : doc.select("resultList > result")) {
-				Element pmid = result.getElementsByTag("pmid").first();
-				String pmidText = (pmid != null ? pmid.text() : null);
-				Element pmcid = result.getElementsByTag("pmcid").first();
-				String pmcidText = (pmcid != null ? pmcid.text() : null);
-				Element doi = result.getElementsByTag("doi").first();
-				String doiText = (doi != null ? doi.text() : null);
-				ids.add(new PublicationIds(pmidText, pmcidText, doiText, pmidText != null ? doc.location() : null, pmcidText != null ? doc.location() : null, doiText != null ? doc.location() : null));
-				++resultSize;
+		try (Fetcher fetcher = new Fetcher(fetcherArgs.getPrivateArgs())) {
+			Map<String, String> query = getQuery(resultType, cursorMark, date, source, search, custom, not, fetcherArgs);
+			Document doc = fetcher.postDoc("https://www.ebi.ac.uk/europepmc/webservices/rest/searchPOST", query, fetcherArgs);
+			if (doc == null) {
+				throw new RuntimeException("No Document returned for query " + query);
 			}
-			if (expectedSize < 0) {
-				Element hitCount = doc.getElementsByTag("hitCount").first();
-				if (hitCount != null) {
-					try {
-						expectedSize = Integer.parseInt(hitCount.text());
-						logger.info(mainMarker, "{}Getting {} results for {}", logPrefix, expectedSize, type);
-					} catch(NumberFormatException e) {
-						throw new RuntimeException("Tag hitCount does not contain an integer in " + doc.location());
+
+			while (doc != null) {
+				int initialSize = resultSize;
+				for (Element result : doc.select("resultList > result")) {
+					Element pmid = result.getElementsByTag("pmid").first();
+					String pmidText = (pmid != null ? pmid.text() : null);
+					Element pmcid = result.getElementsByTag("pmcid").first();
+					String pmcidText = (pmcid != null ? pmcid.text() : null);
+					Element doi = result.getElementsByTag("doi").first();
+					String doiText = (doi != null ? doi.text() : null);
+					ids.add(new PublicationIds(pmidText, pmcidText, doiText, pmidText != null ? doc.location() : null, pmcidText != null ? doc.location() : null, doiText != null ? doc.location() : null));
+					++resultSize;
+				}
+				if (expectedSize < 0) {
+					Element hitCount = doc.getElementsByTag("hitCount").first();
+					if (hitCount != null) {
+						try {
+							expectedSize = Integer.parseInt(hitCount.text());
+							logger.info(mainMarker, "{}Getting {} results for {}", logPrefix, expectedSize, type);
+						} catch(NumberFormatException e) {
+							throw new RuntimeException("Tag hitCount does not contain an integer in " + doc.location());
+						}
+					} else {
+						throw new RuntimeException("Tag hitCount not found in " + doc.location());
+					}
+				}
+				if (resultSize > expectedSize) {
+					throw new RuntimeException("More results have been returned (" + resultSize + ") than expected (" + expectedSize + ") in " + doc.location());
+				}
+				Element nextCursorMark = doc.getElementsByTag("nextCursorMark").first();
+				if (nextCursorMark != null) {
+					String nextCursorMarkText = nextCursorMark.text();
+					if (nextCursorMarkText.equals(cursorMark)) {
+						break;
+					} else {
+						cursorMark = nextCursorMarkText;
+
+						++pageIndex;
+						System.err.print(PubFetcher.progress(pageIndex, (expectedSize - 1) / 1000 + 1, start) + "  \r");
+
+						query = getQuery(resultType, cursorMark, date, source, search, custom, not, fetcherArgs);
+						doc = fetcher.postDoc("https://www.ebi.ac.uk/europepmc/webservices/rest/searchPOST", query, fetcherArgs);
 					}
 				} else {
-					throw new RuntimeException("Tag hitCount not found in " + doc.location());
-				}
-			}
-			if (resultSize > expectedSize) {
-				throw new RuntimeException("More results have been returned (" + resultSize + ") than expected (" + expectedSize + ") in " + doc.location());
-			}
-			Element nextCursorMark = doc.getElementsByTag("nextCursorMark").first();
-			if (nextCursorMark != null) {
-				String nextCursorMarkText = nextCursorMark.text();
-				if (nextCursorMarkText.equals(cursorMark)) {
+					int expectedIndex = (expectedSize - 1) / 1000 + 1;
+					if (expectedIndex > 1 && pageIndex != expectedIndex) {
+						logger.error(mainMarker, "{}Tag nextCursorMark not found in {}", logPrefix, doc.location());
+					}
 					break;
+				}
+				if (resultSize == initialSize) {
+					logger.error(mainMarker, "{}Result size did not increase in {}", logPrefix, doc.location());
+					break;
+				}
+			}
+
+			if (doc == null) {
+				logger.error(mainMarker, "{}No Document returned for query {}", logPrefix, query);
+			}
+			if (resultSize < expectedSize) {
+				if (resultSize > 0) {
+					logger.error(mainMarker, "{}Less results have been returned ({}) than expected ({}) in {}", logPrefix, resultSize, expectedSize, doc.location());
 				} else {
-					cursorMark = nextCursorMarkText;
-
-					++pageIndex;
-					System.err.print(PubFetcher.progress(pageIndex, (expectedSize - 1) / 1000 + 1, start) + "  \r");
-
-					query = getQuery(resultType, cursorMark, date, source, search, custom, not, fetcherArgs);
-					doc = fetcher.postDoc("https://www.ebi.ac.uk/europepmc/webservices/rest/searchPOST", query, fetcherArgs);
+					throw new RuntimeException("Less results have been returned (" + resultSize + ") than expected (" + expectedSize + ") for query " + query);
 				}
-			} else {
-				int expectedIndex = (expectedSize - 1) / 1000 + 1;
-				if (expectedIndex > 1 && pageIndex != expectedIndex) {
-					logger.error(mainMarker, "{}Tag nextCursorMark not found in {}", logPrefix, doc.location());
-				}
-				break;
-			}
-			if (resultSize == initialSize) {
-				logger.error(mainMarker, "{}Result size did not increase in {}", logPrefix, doc.location());
-				break;
 			}
 		}
-
-		if (doc == null) {
-			logger.error(mainMarker, "{}No Document returned for query {}", logPrefix, query);
-		}
-		if (resultSize < expectedSize) {
-			if (resultSize > 0) {
-				logger.error(mainMarker, "{}Less results have been returned ({}) than expected ({}) in {}", logPrefix, resultSize, expectedSize, doc.location());
-			} else {
-				throw new RuntimeException("Less results have been returned (" + resultSize + ") than expected (" + expectedSize + ") for query " + query);
-			}
-		}
-
 		return ids;
 	}
 
