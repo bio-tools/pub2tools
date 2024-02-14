@@ -154,6 +154,7 @@ public final class Pass1 {
 	private static final Pattern FIX_LINK_EMAIL1 = Pattern.compile("[.]?[^/.]+@[^/]+\\.[^/]+$");
 	private static final Pattern FIX_LINK_EMAIL2 = Pattern.compile("[.]?[^/.]+\\.[^/.]+@[^/]+\\.[^/]+$");
 	private static final Pattern FIX_LINK_EMAIL3 = Pattern.compile("[.]?[^/.]+\\.[^/.]+\\.[^/.]+@[^/]+\\.[^/]+$");
+	private static final Pattern URL_FIX = Pattern.compile("^([-\\p{L}\\p{N};/:@&=+$,_.!~*'()%]+(\\?[-\\p{L}\\p{N};/?:@&=+$,_.!~*'()%]*)?(#[-\\p{L}\\p{N};/?:@&=+$,_.!~*'()%]*)?)");
 
 	private static List<Integer> acronyms(String sentence, PreProcessor preProcessor) {
 		List<Integer> acronyms = new ArrayList<>();
@@ -797,6 +798,29 @@ public final class Pass1 {
 			Matcher schemaStart = Common.SCHEMA_START.matcher(link);
 			if (schemaStart.find() && !Common.KNOWN_SCHEMA_START.matcher(link).find()) {
 				links.add(++i, "http://" + link.substring(schemaStart.end()));
+			}
+		}
+		for (int i = 0; i < links.size(); ++i) {
+			String link = links.get(i);
+			Matcher urlFix = URL_FIX.matcher(link);
+			if (urlFix.find()) {
+				String linkFixed = link.substring(urlFix.start(), urlFix.end());
+				if (!link.equals(linkFixed)) {
+					links.set(i, linkFixed);
+					logger.info("URL fixed from {} to {}", link, linkFixed);
+				}
+			} else {
+				logger.error("URL {} not matched", link);
+			}
+		}
+		for (int i = 0; i < links.size(); ++i) {
+			String link = links.get(i);
+			int firstStartParenthesis = link.indexOf('(');
+			int firstEndParenthesis = link.indexOf(')');
+			if (firstEndParenthesis >= 0 && (firstStartParenthesis < 0 || firstEndParenthesis < firstStartParenthesis)) {
+				String linkFixed = link.substring(0, firstEndParenthesis);
+				links.set(i, linkFixed);
+				logger.info("URL fixed from {} to {}", link, linkFixed);
 			}
 		}
 		return links;
