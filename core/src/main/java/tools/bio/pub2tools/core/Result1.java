@@ -50,6 +50,8 @@ public class Result1 implements Comparable<Result1> {
 
 	private boolean oa;
 
+	private boolean preprint;
+
 	private String journalTitle;
 
 	private long pubDate;
@@ -170,6 +172,13 @@ public class Result1 implements Comparable<Result1> {
 	}
 	public void setOa(boolean oa) {
 		this.oa = oa;
+	}
+
+	public boolean isPreprint() {
+		return preprint;
+	}
+	public void setPreprint(boolean preprint) {
+		this.preprint = preprint;
 	}
 
 	public String getJournalTitle() {

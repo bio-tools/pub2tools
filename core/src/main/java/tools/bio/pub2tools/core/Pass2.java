@@ -138,7 +138,7 @@ public final class Pass2 {
 		"description", "description_biotools",
 		"license_homepage", "license_link", "license_download", "license_documentation", "license_abstract", "license", "license_biotools",
 		"language_homepage", "language_link", "language_download", "language_documentation", "language_abstract", "language", "language_biotools",
-		"oa", "journal_title", "pub_date", "citations_count", "citations_timestamp", "citations_count_normalised",
+		"oa", "preprint", "journal_title", "pub_date", "citations_count", "citations_timestamp", "citations_count_normalised",
 		"corresp_author_name", "credit_name_biotools", "corresp_author_orcid", "credit_orcidid_biotools", "corresp_author_email", "credit_email_biotools", "corresp_author_phone", "corresp_author_uri", "credit_url_biotools", "credit" };
 	private static final String[] DIFF_HEADER = new String[] { "biotools_id", "score_score2", "current_publications", "modify_publications", "add_publications", "current_name", "modify_name", "possibly_related",
 		"current_homepage", "modify_homepage", "current_links", "add_links", "current_downloads", "add_downloads", "current_documentations", "add_documentations",
@@ -1223,6 +1223,7 @@ public final class Pass2 {
 		writeField(resultsWriter, existing.stream().map(e -> biotools.get(e)).map(t -> (t.getLanguage() == null ? "" : String.join(" ; ", t.getLanguage()))).collect(Collectors.joining(" | ")));
 
 		writeField(resultsWriter, result.isOa().stream().map(b -> String.valueOf(b)).collect(Collectors.joining(" | ")));
+		writeField(resultsWriter, result.isPreprint().stream().map(b -> String.valueOf(b)).collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, String.join(" | ", result.getJournalTitle()));
 		writeField(resultsWriter, IntStream.range(0, result.getPubDate().size()).mapToObj(i -> result.getPubDateHuman().get(i) + " (" + result.getPubDate().get(i) + ")").collect(Collectors.joining(" | ")));
 		writeField(resultsWriter, result.getCitationsCount().stream().map(i -> String.valueOf(i)).collect(Collectors.joining(" | ")));
@@ -1563,6 +1564,7 @@ public final class Pass2 {
 								resultI.addToolTitleAcronym(resultJ.getToolTitleAcronym().get(0));
 								resultI.addAbstractSentences(resultJ.getAbstractSentences().get(0));
 								resultI.addOa(resultJ.isOa().get(0));
+								resultI.addPreprint(resultJ.isPreprint().get(0));
 								resultI.addJournalTitle(resultJ.getJournalTitle().get(0));
 								resultI.addPubDate(resultJ.getPubDate().get(0));
 								resultI.addPubDateHuman(resultJ.getPubDateHuman().get(0));

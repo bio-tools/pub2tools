@@ -60,6 +60,8 @@ public class Result2 implements Comparable<Result2> {
 
 	private List<Boolean> oa = new ArrayList<>();
 
+	private List<Boolean> preprint = new ArrayList<>();
+
 	private List<String> journalTitle = new ArrayList<>();
 
 	private List<Long> pubDate = new ArrayList<>();
@@ -89,6 +91,7 @@ public class Result2 implements Comparable<Result2> {
 		toolTitleAcronym.add(result1.getToolTitleAcronym());
 		abstractSentences.add(result1.getAbstractSentences());
 		oa.add(result1.isOa());
+		preprint.add(result1.isPreprint());
 		journalTitle.add(result1.getJournalTitle());
 		pubDate.add(result1.getPubDate());
 		pubDateHuman.add(result1.getPubDateHuman());
@@ -213,6 +216,13 @@ public class Result2 implements Comparable<Result2> {
 	}
 	public void addOa(boolean oa) {
 		this.oa.add(oa);
+	}
+
+	public List<Boolean> isPreprint() {
+		return preprint;
+	}
+	public void addPreprint(boolean preprint) {
+		this.preprint.add(preprint);
 	}
 
 	public List<String> getJournalTitle() {

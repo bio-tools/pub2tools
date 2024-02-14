@@ -1209,6 +1209,7 @@ public final class Pass1 {
 		result.setToolTitleAcronym(toolTitleAcronym != null ? toolTitleAcronym : "");
 		result.setAbstractSentences(preProcessor.sentences(publication.getAbstract().getContent()));
 		result.setOa(publication.isOA());
+		result.setPreprint(publication.isPreprint());
 		result.setJournalTitle(publication.getJournalTitle());
 		result.setPubDate(publication.getPubDate());
 		result.setPubDateHuman(publication.getPubDateHuman());
