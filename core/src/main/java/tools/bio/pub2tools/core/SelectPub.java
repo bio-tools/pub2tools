@@ -209,6 +209,8 @@ public class SelectPub {
 
 		List<String> toolsGood = PubFetcher.getResource(SelectPub.class, "select/tool_good.txt");
 		List<String> tools = PubFetcher.getResource(SelectPub.class, "select/tool.txt");
+		List<String> mediocres = PubFetcher.getResource(SelectPub.class, "select/mediocre1.txt");
+		mediocres.addAll(PubFetcher.getResource(SelectPub.class, "select/mediocre2.txt"));
 
 		List<PublicationIds> excellentIds = getIds("excellent", resultType, date, source, excellent, custom, not, fetcherArgs, logPrefix);
 		List<PublicationIds> goodHttpIds = getIds("good + http", resultType, date, source, good + " AND " + http, custom, not, fetcherArgs, logPrefix);
@@ -217,15 +219,21 @@ public class SelectPub {
 		List<PublicationIds> mediocre2HttpToolIds = getIds("mediocre2 + http + tool", resultType, date, source, mediocre2 + " AND " + http + " AND " + tool, custom, not, fetcherArgs, logPrefix);
 		List<PublicationIds> mediocre1ToolGoodToolIds = getIds("mediocre1 + tool_good + tool", resultType, date, source, mediocre1 + " AND " + toolGood + " AND " + tool, custom, not, fetcherArgs, logPrefix);
 		List<PublicationIds> mediocre2ToolGoodToolIds = getIds("mediocre2 + tool_good + tool", resultType, date, source, mediocre2 + " AND " + toolGood + " AND " + tool, custom, not, fetcherArgs, logPrefix);
+		List<PublicationIds> mediocre1GoodToolIds = getIds("mediocre1 + good + tool", resultType, date, source, mediocre1 + " AND " + good + " AND " + tool, custom, not, fetcherArgs, logPrefix);
+		List<PublicationIds> mediocre2GoodToolIds = getIds("mediocre2 + good + tool", resultType, date, source, mediocre2 + " AND " + good + " AND " + tool, custom, not, fetcherArgs, logPrefix);
 		List<PublicationIds> httpToolGoodIds = getIds("http + tool_good", resultType, date, source, http + " AND " + toolGood, custom, not, fetcherArgs, logPrefix);
 
-		List<List<PublicationIds>> toolGoodIds = new ArrayList<>();
+		List<List<PublicationIds>> toolGoodsIds = new ArrayList<>();
 		for (String t : toolsGood) {
-			toolGoodIds.add(getIds("\"" + t + "\"", resultType, date, source, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", custom, not, fetcherArgs, logPrefix));
+			toolGoodsIds.add(getIds("\"" + t + "\"", resultType, date, source, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", custom, not, fetcherArgs, logPrefix));
 		}
-		List<List<PublicationIds>> toolIds = new ArrayList<>();
+		List<List<PublicationIds>> toolsIds = new ArrayList<>();
 		for (String t : tools) {
-			toolIds.add(getIds("\"" + t + "\"", resultType, date, source, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", custom, not, fetcherArgs, logPrefix));
+			toolsIds.add(getIds("\"" + t + "\"", resultType, date, source, "(ABSTRACT:\"" + t + "\" OR ABSTRACT:\"" + getPlural(t) + "\")", custom, not, fetcherArgs, logPrefix));
+		}
+		List<List<PublicationIds>> mediocresIds = new ArrayList<>();
+		for (String t : mediocres) {
+			mediocresIds.add(getIds("\"" + t + "\"", resultType, date, source, "(ABSTRACT:\"" + t + "\")", custom, not, fetcherArgs, logPrefix));
 		}
 
 		List<PublicationIds> goodIds = getIds("good", resultType, date, source, good, custom, not, fetcherArgs, logPrefix);
@@ -233,6 +241,7 @@ public class SelectPub {
 		mediocreIds.addAll(getIds("mediocre1", resultType, date, source, mediocre1, custom, not, fetcherArgs, logPrefix));
 		mediocreIds.addAll(getIds("mediocre2", resultType, date, source, mediocre2, custom, not, fetcherArgs, logPrefix));
 		List<PublicationIds> httpIds = getIds("http", resultType, date, source, http, custom, not, fetcherArgs, logPrefix);
+		List<PublicationIds> toolGoodIds = getIds("tool_good", resultType, date, source, toolGood, custom, not, fetcherArgs, logPrefix);
 
 		logger.info(mainMarker, "{}Getting results for good + tool + tool", logPrefix);
 		List<PublicationIds> goodToolToolIds = new ArrayList<>();
@@ -240,9 +249,9 @@ public class SelectPub {
 		for (int i = 0; i < goodIds.size(); ++i) {
 			System.err.print(PubFetcher.progress(i + 1, goodIds.size(), start) + "  \r");
 			PublicationIds goodId = goodIds.get(i);
-			int j = findId(0, 1, toolIds, goodId);
+			int j = findId(0, 1, toolsIds, goodId);
 			if (j >= 0) {
-				findIdLast(j + 1, toolIds, goodId, goodToolToolIds);
+				findIdLast(j + 1, toolsIds, goodId, goodToolToolIds);
 			}
 		}
 		logger.info(mainMarker, "{}Got {} results for good + tool + tool", logPrefix, goodToolToolIds.size());
@@ -253,11 +262,11 @@ public class SelectPub {
 		int mediocreIdsI = 0;
 		for (PublicationIds mediocreId : mediocreIds) {
 			System.err.print(PubFetcher.progress(mediocreIdsI + 1, mediocreIds.size(), start) + "  \r");
-			int j = findId(0, 2, toolIds, mediocreId);
+			int j = findId(0, 2, toolsIds, mediocreId);
 			if (j >= 0) {
-				j = findId(j + 1, 1, toolIds, mediocreId);
+				j = findId(j + 1, 1, toolsIds, mediocreId);
 				if (j >= 0) {
-					findIdLast(j + 1, toolIds, mediocreId, mediocreToolToolToolIds);
+					findIdLast(j + 1, toolsIds, mediocreId, mediocreToolToolToolIds);
 				}
 			}
 			++mediocreIdsI;
@@ -270,28 +279,28 @@ public class SelectPub {
 		for (int i = 0; i < httpIds.size(); ++i) {
 			System.err.print(PubFetcher.progress(i + 1, httpIds.size(), start) + "  \r");
 			PublicationIds httpId = httpIds.get(i);
-			int j = findId(0, 1, toolIds, httpId);
+			int j = findId(0, 1, toolsIds, httpId);
 			if (j >= 0) {
-				findIdLast(j + 1, toolIds, httpId, httpToolToolIds);
+				findIdLast(j + 1, toolsIds, httpId, httpToolToolIds);
 			}
 		}
 		logger.info(mainMarker, "{}Got {} results for http + tool + tool", logPrefix, httpToolToolIds.size());
 
-		int toolGoodIdsSize = 0;
-		for (List<PublicationIds> toolGoodId : toolGoodIds) {
-			toolGoodIdsSize += toolGoodId.size();
+		int toolGoodsIdsSize = 0;
+		for (List<PublicationIds> toolGoodId : toolGoodsIds) {
+			toolGoodsIdsSize += toolGoodId.size();
 		}
 
 		logger.info(mainMarker, "{}Getting results for tool_good + tool_good", logPrefix);
 		List<PublicationIds> toolGoodToolGoodIds = new ArrayList<>();
 		int toolGoodIndex = 0;
 		start = System.currentTimeMillis();
-		for (int i = 0; i < toolGoodIds.size() - 1; ++i) {
-			for (PublicationIds firstToolGoodId : toolGoodIds.get(i)) {
+		for (int i = 0; i < toolGoodsIds.size() - 1; ++i) {
+			for (PublicationIds firstToolGoodId : toolGoodsIds.get(i)) {
 				++toolGoodIndex;
-				System.err.print(PubFetcher.progress(toolGoodIndex, toolGoodIdsSize, start) + "  \r");
+				System.err.print(PubFetcher.progress(toolGoodIndex, toolGoodsIdsSize, start) + "  \r");
 				if (!toolGoodToolGoodIds.contains(firstToolGoodId)) {
-					findIdLast(i + 1, toolGoodIds, firstToolGoodId, toolGoodToolGoodIds);
+					findIdLast(i + 1, toolGoodsIds, firstToolGoodId, toolGoodToolGoodIds);
 				}
 			}
 		}
@@ -299,21 +308,105 @@ public class SelectPub {
 
 		logger.info(mainMarker, "{}Getting results for tool_good + tool + tool", logPrefix);
 		List<PublicationIds> toolGoodToolToolIds = new ArrayList<>();
-		toolGoodIndex = 0;
 		start = System.currentTimeMillis();
-		for (List<PublicationIds> toolGoodId : toolGoodIds) {
-			for (PublicationIds firstToolGoodId : toolGoodId) {
-				++toolGoodIndex;
-				System.err.print(PubFetcher.progress(toolGoodIndex, toolGoodIdsSize, start) + "  \r");
-				if (!toolGoodToolToolIds.contains(firstToolGoodId)) {
-					int i = findId(0, 1, toolIds, firstToolGoodId);
-					if (i >= 0) {
-						findIdLast(i + 1, toolIds, firstToolGoodId, toolGoodToolToolIds);
+		for (int i = 0; i < toolGoodIds.size(); ++i) {
+			System.err.print(PubFetcher.progress(i + 1, toolGoodIds.size(), start) + "  \r");
+			PublicationIds toolGoodId = toolGoodIds.get(i);
+			int j = findId(0, 1, toolsIds, toolGoodId);
+			if (j >= 0) {
+				findIdLast(j + 1, toolsIds, toolGoodId, toolGoodToolToolIds);
+			}
+		}
+		logger.info(mainMarker, "{}Got {} results for tool_good + tool + tool", logPrefix, toolGoodToolToolIds.size());
+
+		logger.info(mainMarker, "{}Getting results for good + mediocre + mediocre + mediocre + mediocre", logPrefix);
+		List<PublicationIds> goodMediocre4Ids = new ArrayList<>();
+		start = System.currentTimeMillis();
+		for (int i = 0; i < goodIds.size(); ++i) {
+			System.err.print(PubFetcher.progress(i + 1, goodIds.size(), start) + "  \r");
+			PublicationIds goodId = goodIds.get(i);
+			int j = findId(0, 3, mediocresIds, goodId);
+			if (j >= 0) {
+				j = findId(j + 1, 2, mediocresIds, goodId);
+				if (j >= 0) {
+					j = findId(j + 1, 1, mediocresIds, goodId);
+					if (j >= 0) {
+						findIdLast(j + 1, mediocresIds, goodId, goodMediocre4Ids);
 					}
 				}
 			}
 		}
-		logger.info(mainMarker, "{}Got {} results for tool_good + tool + tool", logPrefix, toolGoodToolToolIds.size());
+		logger.info(mainMarker, "{}Got {} results for good + mediocre + mediocre + mediocre + mediocre", logPrefix, goodMediocre4Ids.size());
+
+		logger.info(mainMarker, "{}Getting results for http + mediocre + mediocre + mediocre + mediocre", logPrefix);
+		List<PublicationIds> httpMediocre4Ids = new ArrayList<>();
+		start = System.currentTimeMillis();
+		for (int i = 0; i < httpIds.size(); ++i) {
+			System.err.print(PubFetcher.progress(i + 1, httpIds.size(), start) + "  \r");
+			PublicationIds httpId = httpIds.get(i);
+			int j = findId(0, 3, mediocresIds, httpId);
+			if (j >= 0) {
+				j = findId(j + 1, 2, mediocresIds, httpId);
+				if (j >= 0) {
+					j = findId(j + 1, 1, mediocresIds, httpId);
+					if (j >= 0) {
+						findIdLast(j + 1, mediocresIds, httpId, httpMediocre4Ids);
+					}
+				}
+			}
+		}
+		logger.info(mainMarker, "{}Got {} results for http + mediocre + mediocre + mediocre + mediocre", logPrefix, httpMediocre4Ids.size());
+
+		logger.info(mainMarker, "{}Getting results for tool_good + mediocre + mediocre + mediocre + mediocre", logPrefix);
+		List<PublicationIds> toolGoodMediocre4Ids = new ArrayList<>();
+		start = System.currentTimeMillis();
+		for (int i = 0; i < toolGoodIds.size(); ++i) {
+			System.err.print(PubFetcher.progress(i + 1, toolGoodIds.size(), start) + "  \r");
+			PublicationIds toolGoodId = toolGoodIds.get(i);
+			int j = findId(0, 3, mediocresIds, toolGoodId);
+			if (j >= 0) {
+				j = findId(j + 1, 2, mediocresIds, toolGoodId);
+				if (j >= 0) {
+					j = findId(j + 1, 1, mediocresIds, toolGoodId);
+					if (j >= 0) {
+						findIdLast(j + 1, mediocresIds, toolGoodId, toolGoodMediocre4Ids);
+					}
+				}
+			}
+		}
+		logger.info(mainMarker, "{}Got {} results for tool_good + mediocre + mediocre + mediocre + mediocre", logPrefix, toolGoodMediocre4Ids.size());
+
+		int toolsIdsSize = 0;
+		for (List<PublicationIds> toolId : toolsIds) {
+			toolsIdsSize += toolId.size();
+		}
+
+		logger.info(mainMarker, "{}Getting results for tool + tool + mediocre + mediocre + mediocre + mediocre", logPrefix);
+		List<PublicationIds> toolToolMediocre4Ids = new ArrayList<>();
+		int toolIndex = 0;
+		start = System.currentTimeMillis();
+		for (int i = 0; i < toolsIds.size() - 1; ++i) {
+			for (PublicationIds firstToolId : toolsIds.get(i)) {
+				++toolIndex;
+				System.err.print(PubFetcher.progress(toolIndex, toolsIdsSize, start) + "  \r");
+				if (!toolToolMediocre4Ids.contains(firstToolId)) {
+					findId(i + 1, 0, toolsIds, firstToolId);
+					if (i >= 0) {
+						int j = findId(0, 3, mediocresIds, firstToolId);
+						if (j >= 0) {
+							j = findId(j + 1, 2, mediocresIds, firstToolId);
+							if (j >= 0) {
+								j = findId(j + 1, 1, mediocresIds, firstToolId);
+								if (j >= 0) {
+									findIdLast(j + 1, mediocresIds, firstToolId, toolToolMediocre4Ids);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		logger.info(mainMarker, "{}Got {} results for tool + tool + mediocre + mediocre + mediocre + mediocre", logPrefix, toolToolMediocre4Ids.size());
 
 		Set<PublicationIds> ids = new LinkedHashSet<>();
 		ids.addAll(excellentIds);
@@ -323,12 +416,18 @@ public class SelectPub {
 		ids.addAll(mediocre2HttpToolIds);
 		ids.addAll(mediocre1ToolGoodToolIds);
 		ids.addAll(mediocre2ToolGoodToolIds);
+		ids.addAll(mediocre1GoodToolIds);
+		ids.addAll(mediocre2GoodToolIds);
 		ids.addAll(httpToolGoodIds);
 		ids.addAll(goodToolToolIds);
 		ids.addAll(mediocreToolToolToolIds);
 		ids.addAll(httpToolToolIds);
 		ids.addAll(toolGoodToolGoodIds);
 		ids.addAll(toolGoodToolToolIds);
+		ids.addAll(goodMediocre4Ids);
+		ids.addAll(httpMediocre4Ids);
+		ids.addAll(toolGoodMediocre4Ids);
+		ids.addAll(toolToolMediocre4Ids);
 
 		logger.info(mainMarker, "{}Abstract query for source {} and date {} returned {} results", logPrefix, source, date, ids.size());
 		return ids;
@@ -389,14 +488,14 @@ public class SelectPub {
 			logger.info(mainMarker, "{}Running journal list query for date {}", logPrefix, date);
 			List<String> journalList = PubFetcher.getResource(SelectPub.class, "select/journal.txt");
 			String journalSearch = "(" + journalList.stream().map(j -> "JOURNAL:\"" + j + "\"").collect(Collectors.joining(" OR ")) + ")";
-			List<PublicationIds> idsJournal = getIds("journal list", "idlist", date, null, journalSearch, custom, not, fetcherArgs, logPrefix);
+			List<PublicationIds> idsJournal = getIds("journal list", "idlist", date, null, journalSearch, custom, null, fetcherArgs, logPrefix);
 			logger.info(mainMarker, "{}Journal list query for date {} returned {} results", logPrefix, date, idsJournal.size());
 			ids.addAll(idsJournal);
 		}
 
 		if (disableTool) {
-			ids.addAll(getIds("unrestricted (to tools) from (SRC:MED OR SRC:PMC)", "idlist", date, "(SRC:MED OR SRC:PMC)", null, custom, not, fetcherArgs, logPrefix));
-			ids.addAll(getIds("unrestricted (to tools) from (SRC:PPR)", "lite", date, "(SRC:PPR)", null, custom, not, fetcherArgs, logPrefix));
+			ids.addAll(getIds("unrestricted (to tools) from (SRC:MED OR SRC:PMC)", "idlist", date, "(SRC:MED OR SRC:PMC)", null, custom, null, fetcherArgs, logPrefix));
+			ids.addAll(getIds("unrestricted (to tools) from (SRC:PPR)", "lite", date, "(SRC:PPR)", null, custom, null, fetcherArgs, logPrefix));
 		} else {
 			ids.addAll(abstractQuery("idlist", date, "(SRC:MED OR SRC:PMC)", custom, not, fetcherArgs, logPrefix));
 			ids.addAll(abstractQuery("lite", date, "(SRC:PPR)", custom, not, fetcherArgs, logPrefix));
