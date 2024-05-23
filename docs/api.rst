@@ -5,7 +5,7 @@
 API
 ###
 
-The Pub2Tools API is consumed by sending a JSON request with HTTP POST. The main endpoint is `/api`_, which on the public instance translates to https://exlixir.ut.ee/pub2tools/api.
+The Pub2Tools API is consumed by sending a JSON request with HTTP POST. The main endpoint is `/api`_, which on the public instance translates to https://elixir.ut.ee/pub2tools/api.
 
 JSON numbers and booleans are converted to strings internally. JSON objects are ignored (except under `bio.tools input`_), meaning there is no hierarchy in the request JSON structure.
 
@@ -151,7 +151,7 @@ query
       doi
         DOI of article
 mapping
-  See `mapping in EDAMmap API <https://edammap.readthedocs.io/en/stable/api.html#mapping>`_
+  See `mapping in EDAMmap API <https://edammap.readthedocs.io/en/stable/api.html#mapping-output>`_
 
   Only present when step_ is ``"map"`` or ``"all"``
 _`args`
