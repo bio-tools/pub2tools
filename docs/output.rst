@@ -168,9 +168,7 @@ _`doi`
   .. _same_suggestions:
 same_suggestions
   Currently, results got from two different publications are :ref:`merged into one result <merge_same_suggestions>`, if their top name suggestion_ is exactly equal and confidence_ is not "very low". If the names are equal, but confidence of at least one of the names is "very low", then the publications are not merged, but instead linked through this column (where one result will contain publication IDs of the other result and vice versa). If multiple such links are made, then the publication IDs of the different linked results are separated by ``" | "``.
-
-  .. _score:
-score
+_`score`
   The goodness score of the suggestion_ is calculated in the first pass (:ref:`pass1`) and shows confidence_ in the extracted tool name (and not in how "good" or high impact the tool itself is). Entries in the results file are sorted by score (for entries whose score is at least 1000), but there are a few other things to consider in assessing whether an entry is about a tool and suitable for suggestion to bio.tools -- whether an entry is suggested can be seen in the include_ column.
 
   .. _score2:
@@ -305,7 +303,7 @@ description
   * TOOL (suggestion_) EXISTING UNDER DIFFERENT NAME AS some_publication_existing_name_different_ (limited to 5; names follow bio.tools IDs in parenthesis)
   * NAME EQUAL TO (PUB. DIFFERENT) name_existing_publication_different_
   * NAME (suggestion_) SIMILAR TO (PUB. DIFFERENT) name_match_ (names follow bio.tools IDs in parenthesis)
-  * COMMON LINK WITH (PUB. & NAME DIFFERENT) link_match_ (only output if no more than 5 matches; common link parts follow bio.tools IDs in parenthesis)
+  * COMMON LINK WITH (PUB. & NAME DIFFERENT) link_match_ (only output if no more than 5 matches; common link parts follow bio.tools IDs in parenthesis) (this is not output anymore because of too many FPs)
   * CORRECT NAME OF TOOL COULD ALSO BE other_suggestions_ (up to 4; IDs of current bio.tools entries with publications matching the publications of alternative suggestions follow the names of alternative suggestions in parenthesis)
 _`description_biotools`
   Contains the values of the description attributes (separated by ``" | "``) of the bio.tools entries corresponding to the bio.tools IDs in existing_, that is, if the current entry constructed by Pub2Tools is found to be existing in bio.tools, then the descriptions currently in bio.tools are output here to contrast with the value in the column description_. Line breaks and tabs in the bio.tools description will be replaced with the strings ``"\n"``, ``"\r"``, ``"\t"``.
@@ -342,7 +340,9 @@ language
 _`language_biotools`
   Contains the values of the `language attribute`_ of the bio.tools entries corresponding to the bio.tools IDs in existing_, that is, if the current entry constructed by Pub2Tools is found to be existing in bio.tools, then the languages currently in bio.tools are output here to contrast with the values in the column language_. Languages of a bio.tools entry are separated by ``" ; "`` and languages of different entries are separated by ``" | "``.
 _`oa`
-  ``true``, if the publication is Open Access (according to the PubFetcher's `oa field <https://pubfetcher.readthedocs.io/en/stable/output.html#oa>`_ of the publication). Values of different publication are separated by ``" | "``. This information is just got as a side effect of fetching publications in :ref:`fetch_pub` and it is not used anywhere in Pub2Tools.
+  ``true``, if the publication is Open Access (according to the PubFetcher's `oa field <https://pubfetcher.readthedocs.io/en/stable/output.html#oa>`_ of the publication). Values of different publications are separated by ``" | "``. This information is just got as a side effect of fetching publications in :ref:`fetch_pub` and it is not used anywhere in Pub2Tools.
+_`preprint`
+  ``true``, if the publication is a preprint (according to the PubFetcher's `preprint field <https://pubfetcher.readthedocs.io/en/stable/output.html#preprint>`_ of the publication). Values of different publications are separated by ``" | "``. This information is just got as a side effect of fetching publications in :ref:`fetch_pub` and it is not used anywhere in Pub2Tools.
 _`journal_title`
   Journal titles of publications (separated by ``" | "``) as got from the PubFetcher `journalTitle field <https://pubfetcher.readthedocs.io/en/stable/output.html#journaltitle>`_. Journal titles are used as part of the publication IDs selection process in :ref:`select_pub` and in excluding a few publications from certain journals.
 _`pub_date`

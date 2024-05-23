@@ -163,7 +163,7 @@ public class Resource extends org.edamontology.edammap.server.ResourceBase {
 
 			query = getQuery(serverInput, tool, toolMissingId, false, false);
 
-			if (query.getPublicationIds() == null) {
+			if (query.getPublicationIds() == null || query.getPublicationIds().isEmpty()) {
 				throw new IllegalRequestException("At least one publication must be specified");
 			}
 			List<String> webpageUrls = null;
@@ -217,7 +217,7 @@ public class Resource extends org.edamontology.edammap.server.ResourceBase {
 			logger.info("Running pass2 took {}s", (System.currentTimeMillis() - startPass2) / 1000.0);
 
 			if (tools.isEmpty()) {
-				toolOut = new Tool();
+				throw new IllegalRequestException("Pub2Tools returned zero results");
 			} else {
 				toolOut = tools.get(0);
 				((Map<String, Object>) toolOut.getOthers().get(Pass2.TOOL_STATUS)).put("toolsExtra", null);

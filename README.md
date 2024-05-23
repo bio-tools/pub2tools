@@ -14,6 +14,10 @@ First, Pub2Tools gets a list of publications for the given period by narrowing d
 
 Installation instructions can be found in [INSTALL.md](INSTALL.md).
 
+## Use online
+
+Pub2Tools can also be run as a web server, however in that case a publication has to be provided manually as input. Based on the input (which can also be multiple publications of the same tool and optionally also include the tool/database name and related web pages) one bio.tools entry candidate of the tool is automatically generated. The web server runs a web application, but also an API, which could be used for example to help in a new tool registration interface to automatically fill in or suggest values to different fields. Public instances of the [web application](https://elixir.ut.ee/pub2tools/) and [API](https://pub2tools.readthedocs.io/en/latest/api.html) are available.
+
 ## Documentation
 
 Documentation for Pub2Tools can be found at https://pub2tools.readthedocs.io/.

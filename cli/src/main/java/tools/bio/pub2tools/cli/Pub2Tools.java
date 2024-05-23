@@ -162,7 +162,7 @@ public final class Pub2Tools {
 	private static void getBiotools(Path outputPath, FetcherArgs fetcherArgs, LogLevel logLevel, String logPrefix) throws IOException {
 		String biotoolsFile = outputPath.resolve(Common.BIOTOOLS_FILE).toString();
 		logger.info(MarkerManager.getMarker(Common.MAIN_MARKER), "{}Get all bio.tools content to {}", logPrefix, biotoolsFile);
-		int count = BiotoolsFull.get(biotoolsFile, fetcherArgs.getTimeout(), fetcherArgs.getPrivateArgs().getUserAgent(), false, logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG);
+		int count = BiotoolsFull.get(biotoolsFile, fetcherArgs.getTimeout(), fetcherArgs.getPrivateArgs().getUserAgent(), null, logLevel != LogLevel.INFO && logLevel != LogLevel.DEBUG);
 		logger.info(MarkerManager.getMarker(Common.MAIN_MARKER), "{}Got {} bio.tools entries to {}", logPrefix, count, biotoolsFile);
 	}
 

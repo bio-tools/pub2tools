@@ -12,4 +12,5 @@ Pub2Tools is a Java command-line tool that looks through the scientific literatu
   intro
   usage
   output
+  api
   future

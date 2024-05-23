@@ -1,14 +1,16 @@
 
+.. _usage_manual:
+
 ############
 Usage manual
 ############
 
 
-After Pub2Tools is `installed <https://github.com/bio-tools/pub2tools/blob/master/INSTALL.md>`_, it can be executed on the command line by running the ``java`` command (from a Java Runtime Environment (JRE) capable of running at least version 8 of Java), while giving the compiled Pub2Tools .jar file as argument. For example, executing Pub2Tools with the argument ``-h`` or ``--help`` outputs a list of all possible parameters and commands:
+After Pub2Tools is `installed <https://github.com/bio-tools/pub2tools/blob/master/INSTALL.md>`_, it can be executed on the command line by running the ``java`` command (from a Java Runtime Environment (JRE) capable of running at least version 11 of Java), while giving the compiled Pub2Tools .jar file as argument. For example, executing Pub2Tools with the argument ``-h`` or ``--help`` outputs a list of all possible parameters and commands:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar --help
+  $ java -jar path/to/pub2tools-cli-<version>.jar --help
 
 Running Pub2Tools consists of running it multiple times with different `Setup commands`_ that copy or fetch files required as prerequisites for the Steps_ commands, which, after being all run, will generate the end results. Commands of Pub2Tools begin with one dash (``-``) and parameters_ giving required arguments to or influencing the commands begin with two dashes (``--``). All commands must be followed by the :ref:`output directory <output_directory>` path where all files of a Pub2Tools run will end up.
 
@@ -40,8 +42,8 @@ Examples copying the EDAM ontology file to the directory ``results``:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -copy-edam results --edam path/to/EDAM.owl
-  $ java -jar path/to/pub2tools-<version>.jar -copy-edam results --edam http://edamontology.org/EDAM.owl
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-edam results --edam path/to/EDAM.owl
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-edam results --edam http://edamontology.org/EDAM.owl
 
 .. _copy_idf:
 
@@ -56,7 +58,7 @@ Example copying the (either downloaded or generated) IDF files from their locati
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -copy-idf results --idf path/to/tf.idf --idf-stemmed path/to/tf.stemmed.idf
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-idf results --idf path/to/tf.idf --idf-stemmed path/to/tf.stemmed.idf
 
 .. _get_biotools:
 
@@ -71,7 +73,7 @@ Example fetching bio.tools content to the ``results`` directory:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -get-biotools results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -get-biotools results
 
 .. _copy_biotools:
 
@@ -84,14 +86,14 @@ Example copying bio.tools content to the ``results`` directory:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -copy-biotools results --biotools path/to/biotools.json
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-biotools results --biotools path/to/biotools.json
 
 .. _select_pub:
 
 -select-pub
 ===========
 
-Fetch `publication IDs <https://pubfetcher.readthedocs.io/en/stable/output.html#ids-of-publications>`_ of journal articles from the given period that are potentially suitable for `bio.tools`_ to the file :ref:`pub.txt <pub_txt>` in the given output directory. The resulting file is used as input to the `-fetch-pub`_ step that will download the content of these publications forming the basis of the search for new tools and services to add to bio.tools. Only articles matching certain (changeable) criteria are selected, as otherwise the number of publications to download for the given period would be too large -- due to this filtering the number of publications is reduced by around 50 times (with default options).
+Fetch `publication IDs <https://pubfetcher.readthedocs.io/en/stable/output.html#ids-of-publications>`_ of journal articles from the given period that are potentially suitable for `bio.tools`_ to the file :ref:`pub.txt <pub_txt>` in the given output directory. The resulting file is used as input to the `-fetch-pub`_ step that will download the content of these publications forming the basis of the search for new tools and services to add to bio.tools. Only articles matching certain (changeable) criteria are selected, as otherwise the number of publications to download for the given period would be too large -- due to this filtering the number of publications is reduced by around 25 times (with default options).
 
 The granularity of the selectable period is one day and the range can be specified with the parameters ``--from`` and ``--to``. As argument to these parameters, an ISO-8601 date must be given, e.g. ``2019-08-23``. Instead of ``--from`` and ``--to`` the parameters ``--month`` or ``--day`` can be used. The parameter ``--month`` allows to specify an exact concrete month as the period (e.g. ``2019-08``), so that the number of days in a month doesn't have to be known to cover any whole month. The parameter ``--day`` allows to specify just one whole day as the period (e.g. ``2019-08-23``).
 
@@ -122,12 +124,18 @@ Fetching the publication IDs works by sending large query strings to the `Europe
   * ``mediocre2`` + ``http`` + ``tool``
   * ``mediocre1`` + ``tool_good`` + ``tool``
   * ``mediocre2`` + ``tool_good`` + ``tool``
+  * ``mediocre1`` + ``good`` + ``tool``
+  * ``mediocre2`` + ``good`` + ``tool``
   * ``http`` + ``tool_good``
   * ``good`` + ``tool`` + ``tool``
   * ``mediocre`` + ``tool`` + ``tool`` + ``tool``
   * ``http`` + ``tool`` + ``tool``
   * ``tool_good`` + ``tool_good``
   * ``tool_good`` + ``tool`` + ``tool``
+  * ``good`` + ``mediocre`` + ``mediocre`` + ``mediocre`` + ``mediocre``
+  * ``http`` + ``mediocre`` + ``mediocre`` + ``mediocre`` + ``mediocre``
+  * ``tool_good`` + ``mediocre`` + ``mediocre`` + ``mediocre`` + ``mediocre``
+  * ``tool`` + ``tool`` + ``mediocre`` + ``mediocre`` + ``mediocre`` + ``mediocre``
 
   .. note::
     The category ``mediocre`` is split into two in the implementation simply because otherwise query strings sent to Europe PMC would get too long for it to handle.
@@ -136,30 +144,30 @@ Fetching the publication IDs works by sending large query strings to the `Europe
 
   This restricting by phrase combinations is done to considerably narrow down the returned number of publication IDs so that the amount of publication content to be downloaded would be reasonable. It also reduces potential false positives further down the line, but inevitably, some good articles about tools also get discarded in the process. To not do this restricting, the parameter ``--disable-tool-restriction`` can be supplied. However, doing this would significantly increase the number of results (mostly in the form of false positives), so ``--disable-tool-restriction`` should really be used in conjuction with ``--custom-restriction``.
 
-* A custom search string can be specified after the parameter ``--custom-restriction`` to further restrict the results, for example to some desired custom theme. How to construct such a search string, what fields can be searched and how to combine them can be seen in `Search syntax reference of Europe PMC <https://europepmc.org/searchsyntax>`_. For example, something like ``--custom-restriction '"COVID-19" OR "SARS-CoV-2" OR ABSTRACT:"Coronavirus"'`` could be used to restrict the output of Pub2Tools to tools related to the `COVID-19 pandemic <https://en.wikipedia.org/wiki/COVID-19_pandemic>`_ (in reality, the search string should be made a bit more elaborate). Constructed search strings can be tested using the search box at https://europepmc.org/. If the search string is specific enough and looking through every hit is important, then other restrictions can potentially be disabled with ``--disable-tool-restriction`` and potentially also ``--disable-exclusions``.
+* A custom search string can be specified after the parameter ``--custom-restriction`` to further restrict the results, for example to some desired custom theme. How to construct such a search string, what fields can be searched and how to combine them can be seen in `Search syntax reference of Europe PMC <https://europepmc.org/searchsyntax>`_. For example, something like ``--custom-restriction '"COVID-19" OR "SARS-CoV-2" OR ABSTRACT:"Coronavirus"'`` could be used to restrict the output of Pub2Tools to tools related to the `COVID-19 pandemic <https://en.wikipedia.org/wiki/COVID-19_pandemic>`_ (in reality, the search string should be made a bit more elaborate). Constructed search strings can be tested using the search box at https://europepmc.org/. If the search string is specific enough and looking through every hit is important, then other restrictions can potentially be disabled with ``--disable-tool-restriction`` (this will also enable ``--disable-exclusions``).
 
 * As the last part of the query string sent to Europe PMC, phrases that must not appear in the publication abstract or title are specified to remove some systematic false positives. These help to exclude a few publications that are otherwise selected, but that are actually not about a tool or service (mostly, publications about a medical trial and review articles are excluded this way). The exclusion phrases are specified in the files `not_abstract.txt <https://github.com/bio-tools/pub2tools/blob/master/src/main/resources/select/not_abstract.txt>`_ (e.g. "trial registration", "http://clinicaltrials.gov") and `not_title.txt <https://github.com/bio-tools/pub2tools/blob/master/src/main/resources/select/not_title.txt>`_ (e.g. "systematic review", "controlled trial"). To not do such exclusions, the parameter ``--disable-exclusions`` can be supplied (this would mostly just have the effect of introducing a small number of additional FPs).
 
-Some journals have articles suitable for bio.tools more often than some other journals. As the selection of publications with phrases that must appear in the abstract is not perfect and sometimes excludes good articles, it makes sense to not use this mechanism for some high relevance journals and instead download all publications of the given period from these journals. If the number of such journals is not too high, then this does not significantly increase the total number of publications that must be downloaded. The list of such high priority journals is specified in the file `journal.txt <https://github.com/bio-tools/pub2tools/blob/master/src/main/resources/select/journal.txt>`_. Phrase exclusion with ``not_abstract.txt`` and ``not_title.txt`` is still done (unless ``--disable-exclusions`` is specified) and additional restrictions from ``--custom-restriction`` will also apply. Separate selection from these journals is not done if the parameter ``--disable-tool-restriction`` is specified.
+Some journals have articles suitable for bio.tools more often than some other journals. As the selection of publications with phrases that must appear in the abstract is not perfect and sometimes excludes good articles, it makes sense to not use this mechanism for some high relevance journals and instead download all publications of the given period from these journals. If the number of such journals is not too high, then this does not significantly increase the total number of publications that must be downloaded. The list of such high priority journals is specified in the file `journal.txt <https://github.com/bio-tools/pub2tools/blob/master/src/main/resources/select/journal.txt>`_. Phrase exclusion with ``not_abstract.txt`` and ``not_title.txt`` is not done (as if ``--disable-exclusions`` was specified), but additional restrictions from ``--custom-restriction`` will apply. Separate selection from these journals is not done if the parameter ``--disable-tool-restriction`` is specified.
 
 Two equivalent examples fetching all publication IDs for the month of August 2019 to the directory ``results``:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -select-pub results --from 2019-08-01 --to 2019-08-31
-  $ java -jar path/to/pub2tools-<version>.jar -select-pub results --month 2019-08
+  $ java -jar path/to/pub2tools-cli-<version>.jar -select-pub results --from 2019-08-01 --to 2019-08-31
+  $ java -jar path/to/pub2tools-cli-<version>.jar -select-pub results --month 2019-08
 
 Example selecting publication IDs from publications added to Europe PMC on the 23rd of August 2019:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -select-pub results --day 2019-08-23
+  $ java -jar path/to/pub2tools-cli-<version>.jar -select-pub results --day 2019-08-23
 
 Example selecting publication IDs of COVID-19 related articles for the year 2020 (normally, selecting large time spans can get too slow because of large numbers of combinations to be done with too many returned IDs, here, ``--custom-restriction`` is restricting the output enough):
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -select-pub results --from 2020-01-01 --to 2020-12-31 --custom-restriction '"2019-nCoV" OR "2019nCoV" OR "COVID-19" OR "SARS-CoV-2" OR "COVID19" OR "COVID" OR "SARS-nCoV" OR ("wuhan" AND "coronavirus") OR "Coronavirus" OR "Corona virus" OR "corona-virus" OR "corona viruses" OR "coronaviruses" OR "SARS-CoV" OR "Orthocoronavirinae" OR "MERS-CoV" OR "Severe Acute Respiratory Syndrome" OR "Middle East Respiratory Syndrome" OR ("SARS" AND "virus") OR "soluble ACE2" OR ("ACE2" AND "virus") OR ("ARDS" AND "virus") or ("angiotensin-converting enzyme 2" AND "virus")'
+  $ java -jar path/to/pub2tools-cli-<version>.jar -select-pub results --from 2020-01-01 --to 2020-12-31 --custom-restriction '"2019-nCoV" OR "2019nCoV" OR "COVID-19" OR "SARS-CoV-2" OR "COVID19" OR "COVID" OR "SARS-nCoV" OR ("wuhan" AND "coronavirus") OR "Coronavirus" OR "Corona virus" OR "corona-virus" OR "corona viruses" OR "coronaviruses" OR "SARS-CoV" OR "Orthocoronavirinae" OR "MERS-CoV" OR "Severe Acute Respiratory Syndrome" OR "Middle East Respiratory Syndrome" OR ("SARS" AND "virus") OR "soluble ACE2" OR ("ACE2" AND "virus") OR ("ARDS" AND "virus") or ("angiotensin-converting enzyme 2" AND "virus")'
 
 .. _copy_pub:
 
@@ -172,7 +180,7 @@ Example copying the file containing publication IDs to the ``results`` directory
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -copy-pub results --pub path/to/pub.txt
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-pub results --pub path/to/pub.txt
 
 .. _init_db:
 
@@ -190,7 +198,7 @@ Example initialising an empty database file to the ``results`` directory:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -init-db results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -init-db results
 
 .. _copy_db:
 
@@ -203,7 +211,7 @@ Example copying an existing database to the ``results`` directory:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -copy-db results --db path/to/db.db
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-db results --db path/to/db.db
 
 
 .. _steps:
@@ -227,7 +235,7 @@ Example of running the step with some non-default parameter values:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -fetch-pub results --timeout 30000 --journalsYaml fixes.yaml --fetcher-threads 16
+  $ java -jar path/to/pub2tools-cli-<version>.jar -fetch-pub results --timeout 30000 --journalsYaml fixes.yaml --fetcher-threads 16
 
 .. _pass1:
 
@@ -276,7 +284,7 @@ Example of running the step:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -pass1 results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -pass1 results
 
 .. _fetch_web:
 
@@ -291,7 +299,7 @@ Example of running the step with some non-default parameter values:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -fetch-web results --timeout 30000 --webpagesYaml fixes.yaml --fetcher-threads 16
+  $ java -jar path/to/pub2tools-cli-<version>.jar -fetch-web results --timeout 30000 --webpagesYaml fixes.yaml --fetcher-threads 16
 
 .. _pass2:
 
@@ -415,7 +423,7 @@ Example of running the step:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -pass2 results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -pass2 results
 
 .. _map:
 
@@ -436,7 +444,7 @@ Example of running the step with some non-default parameter values:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -map results --stemming false --branches topic operation data format --mapper-threads 8
+  $ java -jar path/to/pub2tools-cli-<version>.jar -map results --stemming false --branches topic operation data format --mapper-threads 8
 
 .. _all:
 
@@ -455,7 +463,7 @@ An example of running the command:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -all results --edam http://edamontology.org/EDAM.owl --idf https://github.com/edamontology/edammap/raw/master/doc/biotools.idf --idf-stemmed https://github.com/edamontology/edammap/raw/master/doc/biotools.stemmed.idf --month 2019-08
+  $ java -jar path/to/pub2tools-cli-<version>.jar -all results --edam http://edamontology.org/EDAM.owl --idf https://github.com/edamontology/edammap/raw/master/doc/biotools.idf --idf-stemmed https://github.com/edamontology/edammap/raw/master/doc/biotools.stemmed.idf --month 2019-08
 
 .. _resume:
 
@@ -472,7 +480,7 @@ An example of running the command:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -resume results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -resume results
 
 
 .. _parameters:
@@ -520,7 +528,7 @@ A quickstart example for August 2019, where the EDAM ontology and IDF files and 
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -all results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -all results \
   --edam http://edamontology.org/EDAM.owl \
   --idf https://github.com/edamontology/edammap/raw/master/doc/biotools.idf \
   --idf-stemmed https://github.com/edamontology/edammap/raw/master/doc/biotools.stemmed.idf \
@@ -530,7 +538,7 @@ An example getting potential tools about COVID-19 from the year 2020:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -all results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -all results \
   --edam http://edamontology.org/EDAM.owl \
   --idf https://github.com/edamontology/edammap/raw/master/doc/biotools.idf \
   --idf-stemmed https://github.com/edamontology/edammap/raw/master/doc/biotools.stemmed.idf \
@@ -543,40 +551,40 @@ The next example executes each individual setup and step command from start to f
 
   # The EDAM ontology was previously downloaded to the local file system
   # to path/to/EDAM.owl and is copied from there to results/EDAM.owl
-  $ java -jar path/to/pub2tools-<version>.jar -copy-edam results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-edam results \
   --edam path/to/EDAM.owl
   # The IDF files have been downloaded to the local file system and are
   # copied from there to the output directory "results"
-  $ java -jar path/to/pub2tools-<version>.jar -copy-idf results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-idf results \
   --idf path/to/tf.idf --idf-stemmed path/to/tf.stemmed.idf
   # All bio.tools content is fetched to the file results/biotools.json
-  $ java -jar path/to/pub2tools-<version>.jar -get-biotools results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -get-biotools results
   # Candidate publication IDs from August 2019 are fetched to the file
   # results/pub.txt
-  $ java -jar path/to/pub2tools-<version>.jar -select-pub results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -select-pub results \
   --from 2019-08-01 --to 2019-08-31
   # An empty PubFetcher database is initialised to results/db.db
-  $ java -jar path/to/pub2tools-<version>.jar -init-db results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -init-db results
   # In the first step, the content of publications listed in
   # results/pub.txt is fetched to results/db.db, while the connect and
   # read timeout is changed to 30 seconds, some fixes for outdated
   # journal scraping rules are loaded from a YAML file and the number
   # of threads used for parallel fetching is doubled from the default 8
-  $ java -jar path/to/pub2tools-<version>.jar -fetch-pub results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -fetch-pub results \
   --timeout 30000 --journalsYaml journalsFixes.yaml --fetcher-threads 16
   # The first pass of Pub2Tools is run
-  $ java -jar path/to/pub2tools-<version>.jar -pass1 results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -pass1 results
   # Web pages extracted by the first pass are fetched, with some default
   # parameters modified analogously to -fetch-pub
-  $ java -jar path/to/pub2tools-<version>.jar -fetch-web results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -fetch-web results \
   --timeout 30000 --webpagesYaml webpagesFixes.yaml --fetcher-threads 16
   # The second pass of Pub2Tools is run, culminating in the files
   # results/results.csv, results/diff.csv and results/new.json
-  $ java -jar path/to/pub2tools-<version>.jar -pass2 results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -pass2 results
   # EDAM annotations are added to results/new.json and output to
   # results/to_biotools.json, with stemming turned off, mapping done in
   # parallel in 8 threads and up to 5 terms output for all EDAM branches
-  $ java -jar path/to/pub2tools-<version>.jar -map results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -map results \
   --stemming false --branches topic operation data format \
   --mapper-threads 8
 
@@ -584,7 +592,7 @@ The following example is equivalent with the previous one, just all commands hav
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -all results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -all results \
   --edam path/to/EDAM.owl --idf path/to/tf.idf \
   --idf-stemmed path/to/tf.stemmed.idf --month 2019-08 \
   --timeout 30000 --journalsYaml journalsFixes.yaml \
@@ -597,37 +605,37 @@ All files of the setup can be obtained through some external means and simply co
 .. code-block:: bash
 
   # Copy a previously downloaded EDAM ontology to the output directory
-  $ java -jar path/to/pub2tools-<version>.jar -copy-edam results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-edam results \
   --edam path/to/EDAM.owl
   # Copy previously downloaded IDF files to the output directory
-  $ java -jar path/to/pub2tools-<version>.jar -copy-idf results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-idf results \
   --idf path/to/tf.idf --idf-stemmed path/to/tf.stemmed.idf
   # Copy the existing content of bio.tools in JSON format, obtained
   # through a different tool or through a previous run of Pub2Tools
   # to the output directory
-  $ java -jar path/to/pub2tools-<version>.jar -copy-biotools results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-biotools results \
   --biotools path/to/biotools.json
   # Copy publication IDs obtained through some different means, for
   # example a small list of manually entered IDs meant for testing,
   # to the output directory
-  $ java -jar path/to/pub2tools-<version>.jar -copy-pub results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-pub results \
   --pub path/to/pub.txt
   # Copy a PubFetcher database preloaded with potentially useful
   # content to the output directory
-  $ java -jar path/to/pub2tools-<version>.jar -copy-db results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -copy-db results \
   --db path/to/db.db
   # We can use the -resume command to run all step commands in one go;
   # the number of threads has been doubled from default values and up to
   # 5 EDAM terms are output in the mapping step for the default branches
   # of "topic" and "operation"
-  $ java -jar path/to/pub2tools-<version>.jar -resume results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -resume results \
   --fetcher-threads 16 --mapper-threads 8
 
 The following `-all`_ command is equivalent to the previous list of commands:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -all results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -all results \
   --edam path/to/EDAM.owl --idf path/to/tf.idf --idf-stemmed \
   path/to/tf.stemmed.idf --biotools path/to/biotools.json \
   --pub path/to/pub.txt --db path/to/db.db
@@ -638,37 +646,37 @@ The following `-all`_ command is equivalent to the previous list of commands:
   # process is resumed by restarting the step that was interrupted and
   # running the remaining steps up to the end. The same step parameters
   # that were supplied to -all must also be supplied to -resume.
-  $ java -jar path/to/pub2tools-<version>.jar -resume results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -resume results \
   --fetcher-threads 16 --mapper-threads 8
 
 When fetching publications and web pages, some resources might be temporarily down. So for slightly better results, one option could be to wait a few days after an initial fetch and hope that a few extra resources would be available then. Due to PubFetcher's logic, publications and web pages that were successfully fetched in full the first time, are not retried during refetching:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -fetch-pub results
-  $ java -jar path/to/pub2tools-<version>.jar -pass1 results
-  $ java -jar path/to/pub2tools-<version>.jar -fetch-web results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -fetch-pub results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -pass1 results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -fetch-web results
   $ # Wait a few days
-  $ java -jar path/to/pub2tools-<version>.jar -fetch-pub results
-  $ java -jar path/to/pub2tools-<version>.jar -pass1 results
-  $ java -jar path/to/pub2tools-<version>.jar -fetch-web results
-  $ java -jar path/to/pub2tools-<version>.jar -pass2 results
-  $ java -jar path/to/pub2tools-<version>.jar -map results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -fetch-pub results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -pass1 results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -fetch-web results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -pass2 results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -map results
 
 To run all steps again after the wait, another option would be to just use the `-resume`_ command after removing :ref:`step.txt <step_txt>`:
 
 .. code-block:: bash
 
-  $ java -jar path/to/pub2tools-<version>.jar -fetch-pub results
-  $ java -jar path/to/pub2tools-<version>.jar -pass1 results
-  $ java -jar path/to/pub2tools-<version>.jar -fetch-web results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -fetch-pub results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -pass1 results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -fetch-web results
   $ # Wait a few days
   $ rm results/step.txt
-  $ java -jar path/to/pub2tools-<version>.jar -resume results ^C (Interrupted)
+  $ java -jar path/to/pub2tools-cli-<version>.jar -resume results ^C (Interrupted)
   # The -resume command was interrupted for some reason. If -resume is
   # now run again, it will not start again from -fetch-pub, but from the
   # step that was interrupted.
-  $ java -jar path/to/pub2tools-<version>.jar -resume results
+  $ java -jar path/to/pub2tools-cli-<version>.jar -resume results
 
 .. note::
   Before a bigger run of Pub2Tools, it could be beneficial to `test if scraping rules <https://pubfetcher.readthedocs.io/en/stable/scraping.html#testing-of-rules>`_ are still up to date. The running of Pub2Tools in a network with good access to journal articles could also be beneficial, as publisher web sites have to be consulted sometimes.
@@ -694,7 +702,7 @@ Running Pub2Tools on existing bio.tools content can be done in the following way
   $ java -jar path/to/edammap-util-<version>.jar -pub-query biotools.json \
   --query-type biotools -txt-ids-pub pub.txt --plain
   # Run Pub2Tools with default parameters, outputting all to directory "results"
-  $ java -jar path/to/pub2tools-<version>.jar -all results \
+  $ java -jar path/to/pub2tools-cli-<version>.jar -all results \
   --edam http://edamontology.org/EDAM.owl \
   --idf https://github.com/edamontology/edammap/raw/master/doc/biotools.idf \
   --idf-stemmed https://github.com/edamontology/edammap/raw/master/doc/biotools.stemmed.idf \

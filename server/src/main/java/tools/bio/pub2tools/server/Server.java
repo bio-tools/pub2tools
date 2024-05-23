@@ -91,7 +91,7 @@ public final class Server {
 
 	private static void getBiotools(String path) throws IOException {
 		logger.info("Get all bio.tools content to {}", path);
-		int count = BiotoolsFull.get(path, BIOTOOLS_FILE_TIMEOUT, args.getFetcherPrivateArgs().getUserAgent(), false, false);
+		int count = BiotoolsFull.get(path, BIOTOOLS_FILE_TIMEOUT, args.getFetcherPrivateArgs().getUserAgent(), null, false);
 		logger.info("Got {} bio.tools entries to {}", count, path);
 	}
 
