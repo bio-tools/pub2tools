@@ -20,4 +20,4 @@ Pub2Tools can also be run as a web server, however in that case a publication ha
 
 ## Documentation
 
-Documentation for Pub2Tools can be found at https://pub2tools.readthedocs.io/.
+Documentation for Pub2Tools can be found at https://pub2tools.readthedocs.io/en/latest/.
